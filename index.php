@@ -127,13 +127,14 @@ $impiva;
 
 if($transaction["letter"] !== "C" && count($transaction["taxes"]) > 0) {
 	for ( $y = 0 ; $y < count($transaction["taxes"]) ; $y ++) {
-		$baseimp = $transaction["taxes"][$z]["percentage"];
+		$baseimp = $transaction["taxes"][$y]["percentage"];
 		$impneto = $impneto + $transaction["taxes"][$y]["taxBase"];
 		$impiva = $impiva + $transaction["taxes"][$y]["taxAmount"];
 	}
 } else {
+	$baseimp = 0;
 	$impiva = 0;
-	$impneto = $transaction["totalPrice"];
+	$impneto = 0;
 }
 
 $regfe['CbteTipo']=$tipocbte;
@@ -164,6 +165,7 @@ $regfetrib['Desc'] = '';
 $regfetrib['BaseImp'] = 0;
 $regfetrib['Alic'] = 0; 
 $regfetrib['Importe'] = 0;
+
 $regfeiva;
 
 if($baseimp !== 0) {
@@ -171,7 +173,7 @@ if($baseimp !== 0) {
 	$regfeiva['BaseImp'] = $impneto; 
 	$regfeiva['Importe'] = $impiva;
 } else {
-	$regfeiva['Id'] = 1; 
+	$regfeiva['Id'] = 0; 
 	$regfeiva['BaseImp'] = 0; 
 	$regfeiva['Importe'] = 0;
 }
@@ -212,7 +214,7 @@ if(!is_numeric($nro)) {
 	$numero = $nro+1;    
 	file_put_contents("log.txt", date("d/m/Y h:i:s") ." - CAE obtenido - ".$caenum."\n", FILE_APPEND | LOCK_EX);
 	file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Fecha Vencimiento de CAE - ".$caefvt."\n", FILE_APPEND | LOCK_EX);
-	file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Response1 - ".json_encode($wsfev1)."\n", FILE_APPEND | LOCK_EX);
+	file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Response - ".json_encode($wsfev1)."\n", FILE_APPEND | LOCK_EX);
 	if ($caenum != "") {
 		
 		$CAEExpirationDate = str_split($caefvt, 2)[3]."/".str_split($caefvt, 2)[2]."/".str_split($caefvt, 4)[0]." 00:00:00";
@@ -223,7 +225,7 @@ if(!is_numeric($nro)) {
 			"CAE":"'.$caenum.'",
 			"CAEExpirationDate":"'.$CAEExpirationDate.'"
 		}';
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Response2 - ".$result."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Response - ".$result."\n", FILE_APPEND | LOCK_EX);
 		echo $result;
 	} else {
 		if(empty($err)) {
@@ -236,7 +238,7 @@ if(!is_numeric($nro)) {
 				"observationCode2":"'.$wsfev1->ObsCode2.'",
 				"observationMessage2":"'.$wsfev1->ObsMsg2.'"
 			}';
-			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Response3 - ".$err."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Response - ".$err."\n", FILE_APPEND | LOCK_EX);
 			echo $err;
 		}
 	}

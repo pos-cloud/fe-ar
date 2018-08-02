@@ -234,6 +234,10 @@ class WSFEV1 {
 			), 
 		);
 
+		if($this->$condVta == 6 || $regfeiva['Id'] === 0) {
+			$params["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["Iva"] = null;
+		}
+
 		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSFE FECAESolicitar ". json_encode($params)."\n", FILE_APPEND | LOCK_EX);
 	
 		$results = $this->client->FECAESolicitar($params);
