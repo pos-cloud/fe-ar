@@ -99,14 +99,12 @@ class WSFEV1 {
 		}
 		
 		if (is_soap_fault($results)) {
-
 			$err ='{
 						"status":"err",
 						"message":"WSFE class. FaultString: ' . $results->faultcode.' '.$results->faultstring.'"
 					}';
 
 			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSFE is_soap_fault: ". $err."\n", FILE_APPEND | LOCK_EX);
-			// echo $err;
 		}
 		
 		if ($method == 'FEDummy') {return;}
@@ -125,14 +123,15 @@ class WSFEV1 {
 			}
 			
 			if ($results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs[0]->Code){	
-			$this->ObsCode = $results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs[0]->Code;
-			$this->ObsMsg = $results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs[0]->Msg;
+				$this->ObsCode = $results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs[0]->Code;
+				$this->ObsMsg = $results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs[0]->Msg;
 			}		
 		}
 		$this->Code = $results->$XXX->Errors->Err->Code;
 		$this->Msg = $results->$XXX->Errors->Err->Msg;	
 		//fin asigna error a variable
 			
+		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSFE : ".$this->error."\n", FILE_APPEND | LOCK_EX);
 		return $results->$XXX->Errors->Err->Code != 0 ? true : false;
 	}
 
@@ -140,7 +139,8 @@ class WSFEV1 {
 	//Abre TA
 	public function openTA()
 	{
-		$this->TA = simplexml_load_file($this->path.self::TA);
+		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - OPEN TA : ".$this->path."/resources/".$this->database.self::TA."\n", FILE_APPEND | LOCK_EX);
+		$this->TA = simplexml_load_file($this->path."resources/".$this->database."/".self::TA);
 
 		return $this->TA == false ? false : true;
 	}

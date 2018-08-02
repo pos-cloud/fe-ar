@@ -41,8 +41,9 @@ file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Transacción: ".json_encod
 
 $err;
 
-$wsaa = new WSAA();
 $database = $config["database"];
+
+$wsaa = new WSAA($database);
 
 // Compruebo fecha de exp y si la excede genero nuevo TA
 $fecha_ahora = date("Y-m-d H-i-s");
@@ -60,7 +61,7 @@ if ($fecha_exp_TA < $fecha_ahora) {
 		echo $err;
   }
 } else {
-	file_put_contents("log.txt", date("d/m/Y h:i:s") ."TA reutilizado, válido hasta: ". $wsaa->get_expiration() ."\n", FILE_APPEND | LOCK_EX);
+	file_put_contents("log.txt", date("d/m/Y h:i:s") ." TA reutilizado, válido hasta: ". $wsaa->get_expiration() ."\n", FILE_APPEND | LOCK_EX);
 }
 
 $condVta = $config["vatCondition"];
