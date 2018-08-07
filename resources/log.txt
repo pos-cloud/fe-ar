@@ -1,0 +1,9 @@
+07/08/2018 12:47:47 - WSAA Err: {
+						"status":"err",
+						"message":"WSAA class. Faltan archivos necesarios para el funcionamiento."
+					}
+07/08/2018 12:47:47 - WSAA Options SoapClient: {"soap_version":2,"location":"https:\/\/wsaahomo.afip.gov.ar\/ws\/services\/LoginCms","trace":1,"exceptions":0}
+07/08/2018 12:47:47 - WSAA Err: {
+						"status":"err",
+						"message":"ERROR generating PKCS#7 signature"
+					}

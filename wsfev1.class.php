@@ -3,20 +3,12 @@ error_reporting(0);
 
 class WSFEV1 {
 
-	//Definir tipo de uso
-	private $OS = "windows"; // O linux
-	private $build = "test"; // O prod
-
 	const LOG_XMLS = true;         
 	const T_WSDL = "wsfev1.wsdl"; //homologacion 
 	const TA 	= "xml/TA.xml";    # Ubicacion Ticket de Acceso
 	const P_WSDL = "https://servicios1.afip.gov.ar/wsfev1/service.asmx?WSDL"; //produccion
 	const T_WSFEURL = "https://wswhomo.afip.gov.ar/wsfev1/service.asmx"; // homologacion
-	const P_WSFEURL = "https://servicios1.afip.gov.ar/wsfev1/service.asmx"; // produccion  
-
-	//Path completo
-	const PATH_LINUX = '/var/www/html/libs/fe/';
-	const PATH_WINDOWS = 'C:/PosCloud/xampp/htdocs/libs/fe/';
+	const P_WSFEURL = "https://servicios1.afip.gov.ar/wsfev1/service.asmx"; // produccion
 
 	public $path;
 	public $WSDL;
@@ -24,6 +16,7 @@ class WSFEV1 {
 	public $database;
 	public $condVta;
 	public $CUIT;    # CUIT del emisor
+	public $pathLogs;
 	
 	/*
 	* manejo de errores
@@ -38,26 +31,29 @@ class WSFEV1 {
 	private $client;
   	private $TA;
   
-	public function __construct()
+	public function __construct($build, $path, $database, $condVta, $CUIT)
 	{
-	 	ini_set("soap.wsdl_cache_enabled", "0");    
-	  
-	 	if($this->build === "test") {
+		ini_set("soap.wsdl_cache_enabled", "0");    
+		 
+		$this->path = $path;
+		$this->database = $database;
+		$this->condVta = $condVta;
+		$this->CUIT = (double) $CUIT;
+
+		$this->pathLogs = $this->path."/"."resources/".$this->database."/log.txt";
+		//Escribimos el comienzo del log
+		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - Comienzo\n", FILE_APPEND | LOCK_EX);
+
+	 	if($build === "test") {
 			$this->WSDL = self::T_WSDL;
 			$this->WSFEURL = self::T_WSFEURL;
 		} else {
 			$this->WSDL = self::P_WSDL;
 			$this->WSFEURL = self::P_WSFEURL;
 		}
-		
-		if($this->OS === "windows") {
-			$this->path = self::PATH_WINDOWS;
-		} else {
-			$this->path = self::PATH_LINUX;
-		}
     
 		// validar archivos necesarios
-		if($this->build === "test") {
+		if($build === "test") {
 			if (!file_exists($this->path.$this->WSDL)) $this->error .= " Failed to open ".$this->WSDL;
 		}
 		
@@ -66,7 +62,7 @@ class WSFEV1 {
 						"status":"err",
 						"message":"WSFE class. Faltan archivos necesarios para el funcionamiento. '.$this->error.'"
 					}';
-			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSFE Err: ". $err."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - WSFE Err: ". $err."\n", FILE_APPEND | LOCK_EX);
 		}        
 		
 		$options = 	array( 
@@ -76,20 +72,12 @@ class WSFEV1 {
 						'trace'        => 1
 					);
 		
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSFE Options Soap Client: ".json_encode($options)."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - WSFE Options Soap Client: ".json_encode($options)."\n", FILE_APPEND | LOCK_EX);
 
 		$this->client = new SoapClient($this->WSDL, $options);
 	}
-
-	function setConfig($database, $condVta, $CUIT) {
-
-		$this->database = $database;
-		$this->condVta = $condVta;
-		$this->CUIT = (double) $CUIT;
-	}
   
 	// Chequea errores
-
 	private function _checkErrors($results, $method)
 	{
 		if (self::LOG_XMLS) {
@@ -103,7 +91,7 @@ class WSFEV1 {
 						"message":"WSFE class. FaultString: ' . $results->faultcode.' '.$results->faultstring.'"
 					}';
 
-			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSFE is_soap_fault: ". $err."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - WSFE is_soap_fault: ". $err."\n", FILE_APPEND | LOCK_EX);
 		}
 		
 		if ($method == 'FEDummy') {return;}
@@ -139,7 +127,7 @@ class WSFEV1 {
 	//Abre TA
 	public function openTA()
 	{
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - OPEN TA : ".$this->path."/resources/".$this->database.self::TA."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - OPEN TA : ".$this->path."/resources/".$this->database.self::TA."\n", FILE_APPEND | LOCK_EX);
 		$this->TA = simplexml_load_file($this->path."resources/".$this->database."/".self::TA);
 
 		return $this->TA == false ? false : true;
@@ -238,11 +226,11 @@ class WSFEV1 {
 			$params["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["Iva"] = null;
 		}
 
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSFE FECAESolicitar ". json_encode($params)."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - WSFE FECAESolicitar ". json_encode($params)."\n", FILE_APPEND | LOCK_EX);
 	
 		$results = $this->client->FECAESolicitar($params);
 		
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSFE FECAESolicitar Result ". json_encode($results)."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - WSFE FECAESolicitar Result ". json_encode($results)."\n", FILE_APPEND | LOCK_EX);
 		$e = $this->_checkErrors($results, 'FECAESolicitar');
 		
 		//asigno respuesta 

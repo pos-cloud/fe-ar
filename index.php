@@ -4,46 +4,62 @@ date_default_timezone_set('America/Buenos_Aires');
 include('wsaa.class.php');
 include('wsfev1.class.php');
 
+$OS = "windows"; // linux-windows
+$build = "test"; // prod-test
+$pathLinux = '/var/www/html/libs/fe/';
+$pathWindows = 'C:/PosCloud/xampp/htdocs/libs/fe/';
+$pathLogs;
+$path;
+$database;
+$condVta;
+$CUIT;
+$err;
+
+if($OS == "windows") {
+	$path = $pathWindows;
+} else {
+	$path = $pathLinux;
+}
+
 //Escribimos el comienzo del log
 file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Comienzo\n", FILE_APPEND | LOCK_EX);
 
-if(isset($_POST['config'])) {
+if(isset($_POST['config']) || isset($_POST['transaction'])) {
 	$config = json_decode($_POST['config'], true);
-} else {
-	if(empty($err)) {
-		$err =	'{
-					"status":"err",
-					"message":"El CUIT informado no es correcto",
-				}';
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Err: ". $err."\n", FILE_APPEND | LOCK_EX);
-		echo $err;
-	}
-}
-
-//Escribimos log con config recibido
-file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Config: ".json_encode($config)."\n", FILE_APPEND | LOCK_EX);
-
-if(isset($_POST['transaction'])) {
 	$transaction = json_decode($_POST['transaction'], true);
+	if(isset($config["database"]) || isset($config["vatCondition"]) || isset($config["companyCUIT"])) {
+		$database = $config["database"];
+		$condVta = $config["vatCondition"];
+		$CUIT = $config["companyCUIT"];
+		$CUIT = explode("-", $CUIT)[0].explode("-", $CUIT)[1].explode("-", $CUIT)[2];
+		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Se conecta: ".$database."\n", FILE_APPEND | LOCK_EX);
+		$pathLogs = $path."/"."resources/".$database."/log.txt";
+	} else {
+		if(empty($err)) {
+			$err =	'{
+						"status":"err",
+						"message":"Los parámetros enviados no son válidos",
+					}';
+			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Err: ". $err."\n", FILE_APPEND | LOCK_EX);
+			echo $err;
+		}
+	}
 } else {
 	if(empty($err)) {
 		$err =	'{
 					"status":"err",
-					"message":"Debe informar al mes un transacción",
+					"message":"Los parámetros enviados no son válidos",
 				}';
 		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Err: ". $err."\n", FILE_APPEND | LOCK_EX);
 		echo $err;
 	}
 }
 
-// Escribimos log con transacción recibida
-file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Transacción: ".json_encode($transaction)."\n", FILE_APPEND | LOCK_EX);
+//Escribimos log con los parámetros recibidos
+file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Config: ".json_encode($config)."\n", FILE_APPEND | LOCK_EX);
+file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Transacción: ".json_encode($transaction)."\n", FILE_APPEND | LOCK_EX);
 
-$err;
-
-$database = $config["database"];
-
-$wsaa = new WSAA($database);
+$wsaa = new WSAA($build, $path, $database);
 	
 // Compruebo fecha de exp y si la excede genero nuevo TA
 $fecha_ahora = date("Y-m-d H-i-s");
@@ -51,27 +67,21 @@ $fecha_exp_TA = $wsaa->get_expiration();
 
 if ($fecha_exp_TA < $fecha_ahora) {	
 	if ($wsaa->generar_TA()) {
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ."Genero nuevo TA, válido hasta: ". $wsaa->get_expiration() ."\n", FILE_APPEND | LOCK_EX);	
+		file_put_contents($pathLogs, date("d/m/Y h:i:s") ."Genero nuevo TA, válido hasta: ". $wsaa->get_expiration() ."\n", FILE_APPEND | LOCK_EX);	
 	} else {
 		$err =	'{
 						"status":"err",
 						"message":"Error al obtener TA",
 					}';
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Err: ". $err."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Err: ". $err."\n", FILE_APPEND | LOCK_EX);
 		echo $err;
   }
 } else {
-	file_put_contents("log.txt", date("d/m/Y h:i:s") ." - TA reutilizado, válido hasta: ". $wsaa->get_expiration() ."\n", FILE_APPEND | LOCK_EX);
+	file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - TA reutilizado, válido hasta: ". $wsaa->get_expiration() ."\n", FILE_APPEND | LOCK_EX);
 }
 
-$condVta = $config["vatCondition"];
-$CUIT = $config["companyCUIT"];
-$CUIT = explode("-", $CUIT)[0].explode("-", $CUIT)[1].explode("-", $CUIT)[2];
-
-
 //Conecto Wsfev1
-$wsfev1 = new WSFEV1();
-$wsfev1->setConfig($database, $condVta, $CUIT);
+$wsfev1 = new WSFEV1($build, $path, $database, $condVta, $CUIT);
 
 // Carga el archivo TA.xml
 $wsfev1->openTA();
@@ -111,7 +121,7 @@ if(count($transaction["type"]["codes"]) > 0) {
 					"status":"err",
 					"message":"El tipo de comprobante no tiene definidos los código AFIP"
 				}';	
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Err: FECompUltimoAutorizado no es numérico - ". $err."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Err: FECompUltimoAutorizado no es numérico - ". $err."\n", FILE_APPEND | LOCK_EX);
 		echo $err;
 	}
 }
@@ -119,7 +129,7 @@ if(count($transaction["type"]["codes"]) > 0) {
 $ptovta = $transaction["origin"];
 $tipocbte = $tipcomp;
 $cbteFecha = date("Ymd");
-file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Fecha de comprobante - ". $cbteFecha."\n", FILE_APPEND | LOCK_EX);
+file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Fecha de comprobante - ". $cbteFecha."\n", FILE_APPEND | LOCK_EX);
 
 $baseimp = 0;
 $impiva = 0;
@@ -197,11 +207,11 @@ if(!is_numeric($nro)) {
 					"observationCode":"'.$wsfev1->ObsCod.'",
 					"observationMessage":"'.$wsfev1->ObsMsg.'"
 				}';	
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Err: FECompUltimoAutorizado no es numérico - ". $err."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Err: FECompUltimoAutorizado no es numérico - ". $err."\n", FILE_APPEND | LOCK_EX);
 		echo $err;
 	}
 } else {
-	file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Ultimo número de comprobante autorizado - ".$nro."\n", FILE_APPEND | LOCK_EX);
+	file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Ultimo número de comprobante autorizado - ".$nro."\n", FILE_APPEND | LOCK_EX);
 	$nro1 = $nro + 1;
 	$cae = $wsfev1->FECAESolicitar($nro1, // ultimo numero de comprobante autorizado mas uno 
                 $ptovta,  // el punto de venta
@@ -225,7 +235,7 @@ if(!is_numeric($nro)) {
 			"CAE":"'.$caenum.'",
 			"CAEExpirationDate":"'.$CAEExpirationDate.'"
 		}';
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Response - ".$result."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Response - ".$result."\n", FILE_APPEND | LOCK_EX);
 		echo $result;
 	} else {
 		if(empty($err)) {
@@ -238,7 +248,7 @@ if(!is_numeric($nro)) {
 				"observationCode2":"'.$wsfev1->ObsCode2.'",
 				"observationMessage2":"'.$wsfev1->ObsMsg2.'"
 			}';
-			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Response - ".$err."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Response - ".$err."\n", FILE_APPEND | LOCK_EX);
 			echo $err;
 		}
 	}

@@ -2,10 +2,6 @@
 
 class WSAA {
 
-	//Definir tipo de uso
-	private $OS = "windows"; // O linux
-	private $build = "test"; // O prod
-
 	const P_CERT = "keys/poscloud_49ef44bde97bbdd9.crt";        	//Certificado AFIP
 	const T_CERT = "keys/poscloud.crt";
 	const PRIVATEKEY = "keys/poscloud.key";  	//Clave privada con la que se genero el requerimiento de cerificado
@@ -17,15 +13,12 @@ class WSAA {
 	const TA 	= "xml/TA.xml";        			# Ticket de Acceso
 	const T_WSDL 	= "wsaa.wsdl";      			//testing / homologacion
 	const P_WSDL = "https://wsaa.afip.gov.ar/ws/services/LoginCms?WSDL"; //produccion
-  
-	//Path completo
-	const PATH_LINUX = '/var/www/html/libs/fe/';
-	const PATH_WINDOWS = 'C:/PosCloud/xampp/htdocs/libs/fe/';
 
 	private $database;
 	private $URL;
 	private $WSDL;
 	private $path;
+	private $pathLogs;
 	private $cert;
 
 	//Manejar errores
@@ -36,12 +29,17 @@ class WSAA {
 	
 	private $service; 
   
-  	public function __construct($database, $service = 'wsfe') 
+  	public function __construct($build, $path, $database, $service = 'wsfe') 
 	{
+		$this->path = $path;
 		$this->database = $database;
-		$this->service = $service;    
+		$this->service = $service;
 
-		if($this->build === "test") {
+		$this->pathLogs = $this->path."/"."resources/".$this->database."/log.txt";
+		//Escribimos el comienzo del log
+		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - Comienzo\n", FILE_APPEND | LOCK_EX);
+
+		if($build === "test") {
 			$this->WSDL = self::T_WSDL;
 			$this->URL = self::T_URL;
 			$this->cert = self::T_CERT;
@@ -51,19 +49,13 @@ class WSAA {
 			$this->cert = self::P_CERT;
 		}
 		
-		if($this->OS === "windows") {
-			$this->path = self::PATH_WINDOWS;
-		} else {
-			$this->path = self::PATH_LINUX;
-		}
-		
 		// seteos en php
 		ini_set("soap.wsdl_cache_enabled", "0");    
 		
 		// validar archivos necesarios
 		if (!file_exists($this->path."resources/".$this->database."/".$this->cert)) $this->err .= " Failed to open "."resources/".$this->database."/".$this->cert;
 		if (!file_exists($this->path."resources/".$this->database."/".self::PRIVATEKEY)) $this->err .= " Failed to open "."resources/".$this->database."/".self::PRIVATEKEY;
-		if($this->build === "test") {
+		if($build === "test") {
 			if (!file_exists($this->path.$this->WSDL)) $this->err .= " Failed to open ".$this->WSDL;
 		}
 		
@@ -72,7 +64,7 @@ class WSAA {
 						"status":"err",
 						"message":"WSAA class. Faltan archivos necesarios para el funcionamiento."
 					}';
-			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSAA Err: ". $err."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - WSAA Err: ". $err."\n", FILE_APPEND | LOCK_EX);
 			// echo $err;
 		}
 		
@@ -83,7 +75,7 @@ class WSAA {
 					'exceptions'     => 0
 				);
 		
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSAA Options SoapClient: ".json_encode($options)."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - WSAA Options SoapClient: ".json_encode($options)."\n", FILE_APPEND | LOCK_EX);
 		$this->client = new SoapClient($this->WSDL, $options);
 	}
   
@@ -124,7 +116,7 @@ class WSAA {
 						"status":"err",
 						"message":"ERROR generating PKCS#7 signature"
 					}';
-			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSAA Err: ". $err."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - WSAA Err: ". $err."\n", FILE_APPEND | LOCK_EX);
 			// echo $err;
 		}
 			
@@ -157,7 +149,7 @@ class WSAA {
 						"status":"err",
 						"message":"SOAP Fault: '.$results->faultcode.': '.$results->faultstring.'"
 					}';
-			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSAA Err: ". $err."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - WSAA Err: ". $err."\n", FILE_APPEND | LOCK_EX);
 			// echo $err;
 		}
 
@@ -182,7 +174,7 @@ class WSAA {
 						"status":"err",
 						"message":"Error al generar al archivo TA.xml"
 					}';
-			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSAA Err: ". json_encode($err)."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - WSAA Err: ". json_encode($err)."\n", FILE_APPEND | LOCK_EX);
 			// echo $err;
 		}
 
