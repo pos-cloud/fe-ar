@@ -101,7 +101,7 @@ class WSAA {
 		$TRA->header->addChild('generationTime', date('c',date('U')-60));
 		$TRA->header->addChild('expirationTime', date('c',date('U')+60));
 		$TRA->addChild('service', $this->service);
-		$TRA->asXML($this->path.'xml/TRA.xml');
+		$TRA->asXML($this->path."resources/".$this->database."/xml/TRA.xml");		
 	}
   
 	/*
@@ -113,7 +113,7 @@ class WSAA {
 	*/
 	private function sign_TRA()
 	{
-		$STATUS = openssl_pkcs7_sign($this->path . "xml/TRA.xml", $this->path . "xml/TRA.tmp", "file://" . $this->path."resources/".$this->database."/".$this->cert,
+		$STATUS = openssl_pkcs7_sign($this->path."resources/".$this->database."/xml/TRA.xml", $this->path."resources/".$this->database."/xml/TRA.tmp", "file://" . $this->path."resources/".$this->database."/".$this->cert,
 			array("file://" . $this->path."resources/".$this->database."/".self::PRIVATEKEY, self::PASSPHRASE),
 			array(),
 			!PKCS7_DETACHED
@@ -128,7 +128,7 @@ class WSAA {
 			// echo $err;
 		}
 			
-		$inf = fopen($this->path."xml/TRA.tmp", "r");
+		$inf = fopen($this->path."resources/".$this->database."/xml/TRA.tmp", "r");
 		$i = 0;
 		$CMS = "";
 		while (!feof($inf)) { 
@@ -137,7 +137,7 @@ class WSAA {
 		}
 		
 		fclose($inf);
-		unlink($this->path."xml/TRA.tmp");
+		unlink($this->path."resources/".$this->database."/xml/TRA.tmp");
 		
 		return $CMS;
 	}
@@ -149,8 +149,8 @@ class WSAA {
 		$results = $this->client->loginCms(array('in0' => $cms));
 
 		// para logueo
-		file_put_contents($this->path."request-loginCms.xml", $this->client->__getLastRequest()."\n", FILE_APPEND | LOCK_EX);
-		file_put_contents($this->path."response-loginCms.xml", $this->client->__getLastResponse()."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($this->path."resources/".$this->database."/request-loginCms.xml", $this->client->__getLastRequest()."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($this->path."resources/".$this->database."/response-loginCms.xml", $this->client->__getLastResponse()."\n", FILE_APPEND | LOCK_EX);
 
 		if (is_soap_fault($results)) {
 			$err ='{

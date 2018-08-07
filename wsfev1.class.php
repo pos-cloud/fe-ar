@@ -67,7 +67,6 @@ class WSFEV1 {
 						"message":"WSFE class. Faltan archivos necesarios para el funcionamiento. '.$this->error.'"
 					}';
 			file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSFE Err: ". $err."\n", FILE_APPEND | LOCK_EX);
-			// echo $err;
 		}        
 		
 		$options = 	array( 
@@ -94,8 +93,8 @@ class WSFEV1 {
 	private function _checkErrors($results, $method)
 	{
 		if (self::LOG_XMLS) {
-			file_put_contents("xml/request-".$method.".xml",$this->client->__getLastRequest()."\n", FILE_APPEND | LOCK_EX);
-			file_put_contents("xml/response-".$method.".xml",$this->client->__getLastResponse()."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($this->path."resources/".$this->database."/xml/request-".$method.".xml",$this->client->__getLastRequest()."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($this->path."resources/".$this->database."/xml/response-".$method.".xml",$this->client->__getLastResponse()."\n", FILE_APPEND | LOCK_EX);
 		}
 		
 		if (is_soap_fault($results)) {
@@ -121,18 +120,19 @@ class WSFEV1 {
 				$this->ObsCode = $results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs->Code;
 				$this->ObsMsg = $results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs->Msg;
 			}
-			
-			if ($results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs[0]->Code){	
-				$this->ObsCode = $results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs[0]->Code;
-				$this->ObsMsg = $results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs[0]->Msg;
-			}		
 		}
+		
 		$this->Code = $results->$XXX->Errors->Err->Code;
-		$this->Msg = $results->$XXX->Errors->Err->Msg;	
+		$this->Msg = $results->$XXX->Errors->Err->Msg;
 		//fin asigna error a variable
-			
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSFE : ".$this->error."\n", FILE_APPEND | LOCK_EX);
-		return $results->$XXX->Errors->Err->Code != 0 ? true : false;
+		
+		if($results->$XXX->Errors->Err->Code) {
+			return $results->$XXX->Errors->Err->Code != 0 ? true : false;
+		} else if ($results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs->Code) {
+			return $results->$XXX->FeDetResp->FECAEDetResponse->Observaciones->Obs->Code != 0 ? true : false;
+		} else {
+			return false;
+		}
 	}
 
 	
@@ -242,12 +242,13 @@ class WSFEV1 {
 	
 		$results = $this->client->FECAESolicitar($params);
 		
+		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - WSFE FECAESolicitar Result ". json_encode($results)."\n", FILE_APPEND | LOCK_EX);
 		$e = $this->_checkErrors($results, 'FECAESolicitar');
 		
 		//asigno respuesta 
 		$resp_cae = $results->FECAESolicitarResult->FeDetResp->FECAEDetResponse->CAE;
 		$resp_caefvto = $results->FECAESolicitarResult->FeDetResp->FECAEDetResponse->CAEFchVto;
-
+		
 		return $e == false ? Array( 'cae' => $resp_cae, 'fecha_vencimiento' => $resp_caefvto ): false;
 	} //end function FECAESolicitar
 	

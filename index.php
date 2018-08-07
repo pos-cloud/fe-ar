@@ -44,12 +44,12 @@ $err;
 $database = $config["database"];
 
 $wsaa = new WSAA($database);
-
+	
 // Compruebo fecha de exp y si la excede genero nuevo TA
 $fecha_ahora = date("Y-m-d H-i-s");
 $fecha_exp_TA = $wsaa->get_expiration();
 
-if ($fecha_exp_TA < $fecha_ahora) {
+if ($fecha_exp_TA < $fecha_ahora) {	
 	if ($wsaa->generar_TA()) {
 		file_put_contents("log.txt", date("d/m/Y h:i:s") ."Genero nuevo TA, válido hasta: ". $wsaa->get_expiration() ."\n", FILE_APPEND | LOCK_EX);	
 	} else {
@@ -61,7 +61,7 @@ if ($fecha_exp_TA < $fecha_ahora) {
 		echo $err;
   }
 } else {
-	file_put_contents("log.txt", date("d/m/Y h:i:s") ." TA reutilizado, válido hasta: ". $wsaa->get_expiration() ."\n", FILE_APPEND | LOCK_EX);
+	file_put_contents("log.txt", date("d/m/Y h:i:s") ." - TA reutilizado, válido hasta: ". $wsaa->get_expiration() ."\n", FILE_APPEND | LOCK_EX);
 }
 
 $condVta = $config["vatCondition"];
@@ -116,43 +116,45 @@ if(count($transaction["type"]["codes"]) > 0) {
 	}
 }
 
-$ptovta = $transaction["origin"]; //Punto de Venta SIN CEROS ADELANTE!!
-$tipocbte = $tipcomp; // Factura A: 1 --- Factura B: 6 ---- Factura C: 11
+$ptovta = $transaction["origin"];
+$tipocbte = $tipcomp;
 $cbteFecha = date("Ymd");
 file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Fecha de comprobante - ". $cbteFecha."\n", FILE_APPEND | LOCK_EX);
 
-$baseimp;
-$impneto;
-$impiva;
+$baseimp = 0;
+$impiva = 0;
+$impneto = 0;
+$exempt = 0;
 
-if($transaction["letter"] !== "C" && count($transaction["taxes"]) > 0) {
-	for ( $y = 0 ; $y < count($transaction["taxes"]) ; $y ++) {
-		$baseimp = $transaction["taxes"][$y]["percentage"];
-		$impneto = $impneto + $transaction["taxes"][$y]["taxBase"];
-		$impiva = $impiva + $transaction["taxes"][$y]["taxAmount"];
+if($transaction["letter"] !== "C") {
+	$exempt = $transaction["exempt"];
+	if(count($transaction["taxes"]) > 0) {
+		for ( $y = 0 ; $y < count($transaction["taxes"]) ; $y ++) {
+			$baseimp = $transaction["taxes"][$y]["percentage"];
+			$impneto = $impneto + $transaction["taxes"][$y]["taxBase"];
+			$impiva = $impiva + $transaction["taxes"][$y]["taxAmount"];
+		}
 	}
 } else {
-	$baseimp = 0;
-	$impiva = 0;
-	$impneto = 0;
+	$impneto = $transaction["totalPrice"];
 }
 
-$regfe['CbteTipo']=$tipocbte;
-$regfe['Concepto']=1; //Productos: 1 ---- Servicios: 2 ---- Prod y Serv: 3
-$regfe['DocTipo']= $doctipo; //80=CUIT -- 96 DNI --- 99 general cons final
-$regfe['DocNro']= $docnumber;  //0 para consumidor final / importe menor a $1000
-$regfe['CbteFch']=$cbteFecha; 	// fecha emision de factura
-$regfe['ImpNeto']= $impneto;			// Imp Neto
-$regfe['ImpTotConc']=$transaction["exempt"];			// no gravado
-$regfe['ImpIVA']= $impiva;			// IVA liquidado
-$regfe['ImpTrib']=0;			// otros tributos
-$regfe['ImpOpEx']=0;			// operacion exentas
-$regfe['ImpTotal']=$transaction["totalPrice"];			// total de la factura. ImpNeto + ImpTotConc + ImpIVA + ImpTrib + ImpOpEx
-$regfe['FchServDesde']=null;	// solo concepto 2 o 3
-$regfe['FchServHasta']=null;	// solo concepto 2 o 3
-$regfe['FchVtoPago']=null;		// solo concepto 2 o 3
-$regfe['MonId']='PES'; 			// Id de moneda 'PES'
-$regfe['MonCotiz']=1;			// Cotizacion moneda. Solo exportacion
+$regfe['CbteTipo'] = $tipocbte;
+$regfe['Concepto'] = 1; //Productos: 1 ---- Servicios: 2 ---- Prod y Serv: 3
+$regfe['DocTipo'] = $doctipo; //80=CUIT -- 96 DNI --- 99 general cons final
+$regfe['DocNro'] = $docnumber;  //0 para consumidor final / importe menor a $1000
+$regfe['CbteFch'] = $cbteFecha; 	// fecha emision de factura
+$regfe['ImpNeto'] = $impneto;			// Imp Neto
+$regfe['ImpTotConc'] = $exempt;			// no gravado
+$regfe['ImpIVA'] = $impiva;			// IVA liquidado
+$regfe['ImpTrib'] = 0;			// otros tributos
+$regfe['ImpOpEx'] = 0;			// operacion exentas
+$regfe['ImpTotal'] = $transaction["totalPrice"];			// total de la factura. ImpNeto + ImpTotConc + ImpIVA + ImpTrib + ImpOpEx
+$regfe['FchServDesde'] = null;	// solo concepto 2 o 3
+$regfe['FchServHasta'] = null;	// solo concepto 2 o 3
+$regfe['FchVtoPago'] = null;		// solo concepto 2 o 3
+$regfe['MonId'] = 'PES'; 			// Id de moneda 'PES'
+$regfe['MonCotiz'] = 1;			// Cotizacion moneda. Solo exportacion
 
 // Comprobantes asociados (solo notas de crédito y débito):
 $regfeasoc['Tipo'] = 91; //91; //tipo 91|5			
@@ -211,10 +213,8 @@ if(!is_numeric($nro)) {
 	 
 	$caenum = $cae['cae']; 
 	$caefvt = $cae['fecha_vencimiento'];
-	$numero = $nro+1;    
-	file_put_contents("log.txt", date("d/m/Y h:i:s") ." - CAE obtenido - ".$caenum."\n", FILE_APPEND | LOCK_EX);
-	file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Fecha Vencimiento de CAE - ".$caefvt."\n", FILE_APPEND | LOCK_EX);
-	file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Response - ".json_encode($wsfev1)."\n", FILE_APPEND | LOCK_EX);
+	$numero = $nro+1;
+	
 	if ($caenum != "") {
 		
 		$CAEExpirationDate = str_split($caefvt, 2)[3]."/".str_split($caefvt, 2)[2]."/".str_split($caefvt, 4)[0]." 00:00:00";
