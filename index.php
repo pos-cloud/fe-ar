@@ -6,8 +6,8 @@ include('wsfev1.class.php');
 
 $OS = "windows"; // linux-windows
 $build = "test"; // prod-test
-$pathLinux = '/var/www/html/libs/fe/';
-$pathWindows = 'C:/PosCloud/xampp/htdocs/libs/fe/';
+$pathLinux = '/var/www/html/libs/fe/resources/';
+$pathWindows = 'C:/PosCloud/xampp/htdocs/libs/fe/resources/';
 $pathLogs;
 $path;
 $database;
@@ -33,7 +33,7 @@ if(isset($_POST['config']) || isset($_POST['transaction'])) {
 		$CUIT = $config["companyCUIT"];
 		$CUIT = explode("-", $CUIT)[0].explode("-", $CUIT)[1].explode("-", $CUIT)[2];
 		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Se conecta: ".$database."\n", FILE_APPEND | LOCK_EX);
-		$pathLogs = $path."/"."resources/".$database."/log.txt";
+		$pathLogs = $path.$database."/log.txt";
 	} else {
 		if(empty($err)) {
 			$err =	'{

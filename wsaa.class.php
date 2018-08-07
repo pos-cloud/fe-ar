@@ -35,7 +35,7 @@ class WSAA {
 		$this->database = $database;
 		$this->service = $service;
 
-		$this->pathLogs = $this->path."/"."resources/".$this->database."/log.txt";
+		$this->pathLogs = $this->path.$this->database."/log.txt";
 		//Escribimos el comienzo del log
 		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - Comienzo\n", FILE_APPEND | LOCK_EX);
 
@@ -53,8 +53,8 @@ class WSAA {
 		ini_set("soap.wsdl_cache_enabled", "0");    
 		
 		// validar archivos necesarios
-		if (!file_exists($this->path."resources/".$this->database."/".$this->cert)) $this->err .= " Failed to open "."resources/".$this->database."/".$this->cert;
-		if (!file_exists($this->path."resources/".$this->database."/".self::PRIVATEKEY)) $this->err .= " Failed to open "."resources/".$this->database."/".self::PRIVATEKEY;
+		if (!file_exists($this->path.$this->database."/".$this->cert)) $this->err .= " Failed to open ".$this->database."/".$this->cert;
+		if (!file_exists($this->path.$this->database."/".self::PRIVATEKEY)) $this->err .= " Failed to open ".$this->database."/".self::PRIVATEKEY;
 		if($build === "test") {
 			if (!file_exists($this->path.$this->WSDL)) $this->err .= " Failed to open ".$this->WSDL;
 		}
@@ -93,7 +93,7 @@ class WSAA {
 		$TRA->header->addChild('generationTime', date('c',date('U')-60));
 		$TRA->header->addChild('expirationTime', date('c',date('U')+60));
 		$TRA->addChild('service', $this->service);
-		$TRA->asXML($this->path."resources/".$this->database."/xml/TRA.xml");		
+		$TRA->asXML($this->path.$this->database."/xml/TRA.xml");		
 	}
   
 	/*
@@ -105,8 +105,8 @@ class WSAA {
 	*/
 	private function sign_TRA()
 	{
-		$STATUS = openssl_pkcs7_sign($this->path."resources/".$this->database."/xml/TRA.xml", $this->path."resources/".$this->database."/xml/TRA.tmp", "file://" . $this->path."resources/".$this->database."/".$this->cert,
-			array("file://" . $this->path."resources/".$this->database."/".self::PRIVATEKEY, self::PASSPHRASE),
+		$STATUS = openssl_pkcs7_sign($this->path.$this->database."/xml/TRA.xml", $this->path.$this->database."/xml/TRA.tmp", "file://" . $this->path.$this->database."/".$this->cert,
+			array("file://" . $this->path.$this->database."/".self::PRIVATEKEY, self::PASSPHRASE),
 			array(),
 			!PKCS7_DETACHED
 		);
@@ -120,7 +120,7 @@ class WSAA {
 			// echo $err;
 		}
 			
-		$inf = fopen($this->path."resources/".$this->database."/xml/TRA.tmp", "r");
+		$inf = fopen($this->path.$this->database."/xml/TRA.tmp", "r");
 		$i = 0;
 		$CMS = "";
 		while (!feof($inf)) { 
@@ -129,7 +129,7 @@ class WSAA {
 		}
 		
 		fclose($inf);
-		unlink($this->path."resources/".$this->database."/xml/TRA.tmp");
+		unlink($this->path.$this->database."/xml/TRA.tmp");
 		
 		return $CMS;
 	}
@@ -141,8 +141,8 @@ class WSAA {
 		$results = $this->client->loginCms(array('in0' => $cms));
 
 		// para logueo
-		file_put_contents($this->path."resources/".$this->database."/request-loginCms.xml", $this->client->__getLastRequest()."\n", FILE_APPEND | LOCK_EX);
-		file_put_contents($this->path."resources/".$this->database."/response-loginCms.xml", $this->client->__getLastResponse()."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($this->path.$this->database."/request-loginCms.xml", $this->client->__getLastRequest()."\n", FILE_APPEND | LOCK_EX);
+		file_put_contents($this->path.$this->database."/response-loginCms.xml", $this->client->__getLastResponse()."\n", FILE_APPEND | LOCK_EX);
 
 		if (is_soap_fault($results)) {
 			$err ='{
@@ -169,7 +169,7 @@ class WSAA {
 		$this->create_TRA();
 		$TA = $this->call_WSAA( $this->sign_TRA() );
 						
-		if (!file_put_contents($this->path."resources/".$this->database."/".self::TA, $TA)) {
+		if (!file_put_contents($this->path.$this->database."/".self::TA, $TA)) {
 			$err ='{
 						"status":"err",
 						"message":"Error al generar al archivo TA.xml"
@@ -188,7 +188,7 @@ class WSAA {
 	{    
 		// si no esta en memoria abrirlo
 		if(empty($this->TA)) {
-			$TA_file = file($this->path."resources/".$this->database."/".self::TA, FILE_IGNORE_NEW_LINES);
+			$TA_file = file($this->path.$this->database."/".self::TA, FILE_IGNORE_NEW_LINES);
 			if($TA_file) {
 				$TA_xml = '';
 				for($i=0; $i < sizeof($TA_file); $i++)

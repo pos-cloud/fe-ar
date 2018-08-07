@@ -32,3 +32,29 @@
 			"CAE":"68322664134588",
 			"CAEExpirationDate":"17/08/2018 00:00:00"
 		}
+07/08/2018 12:54:28 - Config: {"companyCUIT":"20-36185083-2","vatCondition":6,"database":"mn"}
+07/08/2018 12:54:28 - Transacción: {"_id":"5b6917f2bc1d9536f89b0e76","creationDate":"2018-08-05T00:08:51.000Z","operationType":"C","madein":"mostrador","type":{"_id":"5b60c4f567748935601d8d94","operationType":"U","creationDate":"2018-07-31T20:21:02.000Z","creationUser":"5b60c4f467748935601d8d7d","tax":true,"defectPrinter":{"_id":"5b60c4f567748935601d8d8b","operationType":"C","creationDate":"2018-07-31T20:21:02.000Z","creationUser":"5b60c4f467748935601d8d7d","printIn":"Mostrador","type":"PDF","origin":1,"name":"PDF","__v":0},"printable":true,"electronics":true,"defectOrders":false,"requestArticles":true,"stockMovement":"Salida","modifyStock":true,"movement":"Entrada","currentAccount":"Si","labelPrint":"Factura","name":"eFactura","transactionMovement":"Venta","__v":0,"requestTaxes":false,"fixedOrigin":3,"fixedLetter":"","allowAPP":false,"codes":[{"letter":"A","code":1},{"letter":"B","code":6},{"letter":"C","code":11}],"updateUser":"5b60c4f467748935601d8d7d","updateDate":"2018-08-02T02:56:41.000Z"},"state":"Abierto","diners":0,"totalPrice":24.2,"discountPercent":0,"discountAmount":0,"exempt":24.2,"VATPeriod":"201808","startDate":"2018-08-07T03:54:26.000Z","number":6,"letter":"C","origin":3,"__v":0,"taxes":[]}
+07/08/2018 12:54:28 - Comienzo
+07/08/2018 12:54:28 - WSAA Err: {
+						"status":"err",
+						"message":"WSAA class. Faltan archivos necesarios para el funcionamiento."
+					}
+07/08/2018 12:54:28 - WSAA Options SoapClient: {"soap_version":2,"location":"https:\/\/wsaahomo.afip.gov.ar\/ws\/services\/LoginCms","trace":1,"exceptions":0}
+07/08/2018 12:54:28 - TA reutilizado, válido hasta: 2018-08-07 09:06:17
+07/08/2018 12:54:28 - Comienzo
+07/08/2018 12:54:28 - WSFE Err: {
+						"status":"err",
+						"message":"WSFE class. Faltan archivos necesarios para el funcionamiento.  Failed to open wsfev1.wsdl"
+					}
+07/08/2018 12:54:28 - WSFE Options Soap Client: {"soap_version":2,"location":"https:\/\/wswhomo.afip.gov.ar\/wsfev1\/service.asmx","exceptions":0,"trace":1}
+07/08/2018 12:54:28 - OPEN TA : C:/PosCloud/xampp/htdocs/libs/fe/resources/mnxml/TA.xml
+07/08/2018 12:54:28 - Fecha de comprobante - 20180807
+07/08/2018 12:54:28 - Ultimo número de comprobante autorizado - 10
+07/08/2018 12:54:28 - WSFE FECAESolicitar {"Auth":{"Token":{"0":"PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI\/Pgo8c3NvIHZlcnNpb249IjIuMCI+CiAgICA8aWQgc3JjPSJDTj13c2FhaG9tbywgTz1BRklQLCBDPUFSLCBTRVJJQUxOVU1CRVI9Q1VJVCAzMzY5MzQ1MDIzOSIgZHN0PSJDTj13c2ZlLCBPPUFGSVAsIEM9QVIiIHVuaXF1ZV9pZD0iMjgyODM5MzM5IiBnZW5fdGltZT0iMTUzMzYwMDMxNyIgZXhwX3RpbWU9IjE1MzM2NDM1NzciLz4KICAgIDxvcGVyYXRpb24gdHlwZT0ibG9naW4iIHZhbHVlPSJncmFudGVkIj4KICAgICAgICA8bG9naW4gZW50aXR5PSIzMzY5MzQ1MDIzOSIgc2VydmljZT0id3NmZSIgdWlkPSJTRVJJQUxOVU1CRVI9Q1VJVCAyMDM2MTg1MDgzMiwgQ049cG9zY2xvdWQiIGF1dGhtZXRob2Q9ImNtcyIgcmVnbWV0aG9kPSIyMiI+CiAgICAgICAgICAgIDxyZWxhdGlvbnM+CiAgICAgICAgICAgICAgICA8cmVsYXRpb24ga2V5PSIyMDM2MTg1MDgzMiIgcmVsdHlwZT0iNCIvPgogICAgICAgICAgICA8L3JlbGF0aW9ucz4KICAgICAgICA8L2xvZ2luPgogICAgPC9vcGVyYXRpb24+Cjwvc3NvPgo="},"Sign":{"0":"TcnwCQK1wynmN8tF0NZihHfvsGhV0wMDj9IHvYRJqxz0JwJttgMSUbeKl0Ftb3gy0pmlYvKlRUyWCB66edMJmyznmWOps\/ICrUfKFeIc\/B5wYibt3346IOUrKWY+1FcPgwQIK\/63f5NGUXdJLCScnEzJGBgE0I0uJUnZ+nLsP\/k="},"Cuit":20361850832},"FeCAEReq":{"FeCabReq":{"CantReg":1,"PtoVta":3,"CbteTipo":11},"FeDetReq":{"FECAEDetRequest":{"Concepto":1,"DocTipo":99,"DocNro":0,"CbteDesde":11,"CbteHasta":11,"CbteFch":"20180807","ImpNeto":24.2,"ImpTotConc":0,"ImpIVA":0,"ImpTrib":0,"ImpOpEx":0,"ImpTotal":24.2,"FchServDesde":null,"FchServHasta":null,"FchVtoPago":null,"MonId":"PES","MonCotiz":1,"Tributos":{"Tributo":{"Id":1,"Desc":"","BaseImp":0,"Alic":0,"Importe":0}},"Iva":null}}}}
+07/08/2018 12:54:28 - WSFE FECAESolicitar Result {"FECAESolicitarResult":{"FeCabResp":{"Cuit":20361850832,"PtoVta":3,"CbteTipo":11,"FchProceso":"20180807005427","CantReg":1,"Resultado":"A","Reproceso":"N"},"FeDetResp":{"FECAEDetResponse":{"Concepto":1,"DocTipo":99,"DocNro":0,"CbteDesde":11,"CbteHasta":11,"CbteFch":"20180807","Resultado":"A","CAE":"68322664134591","CAEFchVto":"20180817"}}}}
+07/08/2018 12:54:28 - Response - {
+			"status":"OK",
+			"number":11,
+			"CAE":"68322664134591",
+			"CAEExpirationDate":"17/08/2018 00:00:00"
+		}

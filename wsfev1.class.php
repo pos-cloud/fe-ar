@@ -40,7 +40,7 @@ class WSFEV1 {
 		$this->condVta = $condVta;
 		$this->CUIT = (double) $CUIT;
 
-		$this->pathLogs = $this->path."/"."resources/".$this->database."/log.txt";
+		$this->pathLogs = $this->path."/".$this->database."/log.txt";
 		//Escribimos el comienzo del log
 		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - Comienzo\n", FILE_APPEND | LOCK_EX);
 
@@ -81,8 +81,8 @@ class WSFEV1 {
 	private function _checkErrors($results, $method)
 	{
 		if (self::LOG_XMLS) {
-			file_put_contents($this->path."resources/".$this->database."/xml/request-".$method.".xml",$this->client->__getLastRequest()."\n", FILE_APPEND | LOCK_EX);
-			file_put_contents($this->path."resources/".$this->database."/xml/response-".$method.".xml",$this->client->__getLastResponse()."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($this->path.$this->database."/xml/request-".$method.".xml",$this->client->__getLastRequest()."\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($this->path.$this->database."/xml/response-".$method.".xml",$this->client->__getLastResponse()."\n", FILE_APPEND | LOCK_EX);
 		}
 		
 		if (is_soap_fault($results)) {
@@ -127,8 +127,8 @@ class WSFEV1 {
 	//Abre TA
 	public function openTA()
 	{
-		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - OPEN TA : ".$this->path."/resources/".$this->database.self::TA."\n", FILE_APPEND | LOCK_EX);
-		$this->TA = simplexml_load_file($this->path."resources/".$this->database."/".self::TA);
+		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - OPEN TA : ".$this->path.$this->database.self::TA."\n", FILE_APPEND | LOCK_EX);
+		$this->TA = simplexml_load_file($this->path.$this->database."/".self::TA);
 
 		return $this->TA == false ? false : true;
 	}
