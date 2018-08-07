@@ -1,11 +1,1 @@
-07/08/2018 12:47:47 - Comienzo
-07/08/2018 12:47:47 - Err: {
-					"status":"err",
-					"message":"Los parámetros enviados no son válidos",
-				}
-07/08/2018 12:49:22 - Comienzo
-07/08/2018 12:49:22 - Se conecta: mn
-07/08/2018 12:51:28 - Comienzo
-07/08/2018 12:51:28 - Se conecta: mn
-07/08/2018 12:54:28 - Comienzo
-07/08/2018 12:54:28 - Se conecta: mn
+07/08/2018 01:03:29 - Se conecta: bc

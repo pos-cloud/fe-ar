@@ -36,8 +36,6 @@ class WSAA {
 		$this->service = $service;
 
 		$this->pathLogs = $this->path.$this->database."/log.txt";
-		//Escribimos el comienzo del log
-		file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - Comienzo\n", FILE_APPEND | LOCK_EX);
 
 		if($build === "test") {
 			$this->WSDL = self::T_WSDL;
@@ -56,7 +54,7 @@ class WSAA {
 		if (!file_exists($this->path.$this->database."/".$this->cert)) $this->err .= " Failed to open ".$this->database."/".$this->cert;
 		if (!file_exists($this->path.$this->database."/".self::PRIVATEKEY)) $this->err .= " Failed to open ".$this->database."/".self::PRIVATEKEY;
 		if($build === "test") {
-			if (!file_exists($this->path.$this->WSDL)) $this->err .= " Failed to open ".$this->WSDL;
+			if (!file_exists($this->WSDL)) $this->err .= " Failed to open ".$this->WSDL;
 		}
 		
 		if(!empty($this->err)) {

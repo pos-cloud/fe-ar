@@ -21,9 +21,6 @@ if($OS == "windows") {
 	$path = $pathLinux;
 }
 
-//Escribimos el comienzo del log
-file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Comienzo\n", FILE_APPEND | LOCK_EX);
-
 if(isset($_POST['config']) || isset($_POST['transaction'])) {
 	$config = json_decode($_POST['config'], true);
 	$transaction = json_decode($_POST['transaction'], true);
@@ -55,6 +52,8 @@ if(isset($_POST['config']) || isset($_POST['transaction'])) {
 	}
 }
 
+//Escribimos el comienzo del log
+file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Inicio Transacción\n", FILE_APPEND | LOCK_EX);
 //Escribimos log con los parámetros recibidos
 file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Config: ".json_encode($config)."\n", FILE_APPEND | LOCK_EX);
 file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Transacción: ".json_encode($transaction)."\n", FILE_APPEND | LOCK_EX);
