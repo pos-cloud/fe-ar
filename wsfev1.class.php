@@ -220,7 +220,7 @@ class WSFEV1 {
 			), 
 		);
 
-		if($this->$condVta == 6 || $regfeiva['Id'] === 0) {
+		if($this->condVta == 6 || $regfeiva['Id'] === 0) {
 			$params["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["Iva"] = null;
 		}
 

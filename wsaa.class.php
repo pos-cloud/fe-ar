@@ -2,7 +2,7 @@
 
 class WSAA {
 
-	const P_CERT = "keys/poscloud_49ef44bde97bbdd9.crt";        	//Certificado AFIP
+	const P_CERT = "keys/poscloud.crt";        	//Certificado AFIP
 	const T_CERT = "keys/poscloud.crt";
 	const PRIVATEKEY = "keys/poscloud.key";  	//Clave privada con la que se genero el requerimiento de cerificado
 	const PASSPHRASE = "";
@@ -60,7 +60,7 @@ class WSAA {
 		if(!empty($this->err)) {
 			$err ='{
 						"status":"err",
-						"message":"WSAA class. Faltan archivos necesarios para el funcionamiento."
+						"message":"WSAA class. Faltan archivos necesarios para el funcionamiento."'.$this->err.'
 					}';
 			file_put_contents($this->pathLogs, date("d/m/Y h:i:s") ." - WSAA Err: ". $err."\n", FILE_APPEND | LOCK_EX);
 			// echo $err;
