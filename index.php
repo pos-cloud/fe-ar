@@ -15,12 +15,29 @@ $condVta;
 $CUIT;
 $err;
 
+
+// OS HANDLER, WHY??
 if($OS == "windows") {
 	$path = $pathWindows;
 } else {
 	$path = $pathLinux;
 }
 
+/* ENDPOINTS
+
+- config
+	- database
+	- vatCondition
+	- companyCUIT
+- transaction
+
+- Include logging handler?
+
+- Error and exception handler
+
+
+
+*/
 if(isset($_POST['config']) || isset($_POST['transaction'])) {
 	$config = json_decode($_POST['config'], true);
 	$transaction = json_decode($_POST['transaction'], true);
@@ -52,17 +69,29 @@ if(isset($_POST['config']) || isset($_POST['transaction'])) {
 	}
 }
 
+
+
+// MORE LOGGING
+
+
 //Escribimos el comienzo del log
 file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Inicio Transacción\n", FILE_APPEND | LOCK_EX);
 //Escribimos log con los parámetros recibidos
 file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Config: ".json_encode($config)."\n", FILE_APPEND | LOCK_EX);
 file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Transacción: ".json_encode($transaction)."\n", FILE_APPEND | LOCK_EX);
 
+
+
+// AUTHENTICATION PROCESS
+
 $wsaa = new WSAA($build, $path, $database);
 	
 // Compruebo fecha de exp y si la excede genero nuevo TA
 $fecha_ahora = date("Y-m-d H-i-s");
 $fecha_exp_TA = $wsaa->get_expiration();
+
+
+// IF TOKEN EXPIRED, GENERATE A NEW TOKEN
 
 if ($fecha_exp_TA < $fecha_ahora) {	
 	if ($wsaa->generar_TA()) {
@@ -79,14 +108,22 @@ if ($fecha_exp_TA < $fecha_ahora) {
 	file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - TA reutilizado, válido hasta: ". $wsaa->get_expiration() ."\n", FILE_APPEND | LOCK_EX);
 }
 
+
+// HASTA AQUI LLEGA EL ENDPOINT DE CONFIGURACION, BASICAMENTE ACTUALIZA EL TOKEN QUE SE USARA MAS ADELANTE.
+
+// AQUI EMPIEZA EL ENDPOINT DE TRANSACCION, USO EL TOKEN
 //Conecto Wsfev1
 $wsfev1 = new WSFEV1($build, $path, $database, $condVta, $CUIT);
 
 // Carga el archivo TA.xml
 $wsfev1->openTA();
 
+// TRANSACTION ENDPOINT USE HERE, WHY MIX IT WITH CONFIG BEFORE????
+// VALIDATE IF COMPANY, if not, use default values, initialize early please
 $doctipo;
 $docnumber;
+
+
 
 if($transaction["company"]) {
 	if( $transaction["company"]["DNI"] && $transaction["company"]["DNI"] !== '' ) {
@@ -107,6 +144,8 @@ if($transaction["company"]) {
 
 $tipcomp;
 $x;
+
+// VALITADION IF TRANSACTION TYPE CODES EXISTS
 
 if(count($transaction["type"]["codes"]) > 0) {
 	for ( $x = 0 ; $x < count($transaction["type"]["codes"]) ; $x ++ ) {
@@ -148,6 +187,28 @@ if($transaction["letter"] !== "C") {
 	$impneto = $transaction["totalPrice"];
 }
 
+
+/*
+- transaction:
+	- company
+		- DNI
+		- CUIT
+	- type
+		- codes (object array)
+			- letter
+	- origin
+	- letter
+	- exempt
+	- taxes (objeft array)
+		- percentage
+		- taxBase
+		- taxAmount
+	- totalPrice
+
+*/
+
+
+/* CONFIGURACION DEL MENSAJE */
 $regfe['CbteTipo'] = $tipocbte;
 $regfe['Concepto'] = 1; //Productos: 1 ---- Servicios: 2 ---- Prod y Serv: 3
 $regfe['DocTipo'] = $doctipo; //80=CUIT -- 96 DNI --- 99 general cons final
@@ -191,6 +252,11 @@ if($baseimp !== 0) {
 
 //Pido ultimo numero autorizado
 $nro = $wsfev1->FECompUltimoAutorizado($ptovta, $tipocbte);
+
+// VAlIDAR SI NO ES NUMERO Y RETORNAR ERROR
+// SI ES NUMERO, PROCEDER AL LLAMADO
+
+//TODO ESTO PASA SI INVOCO EL ENDPOINT TRANSACCION
 
 if(!is_numeric($nro)) {
 	$nro=0;
