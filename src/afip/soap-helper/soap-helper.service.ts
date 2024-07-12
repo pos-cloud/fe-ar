@@ -5,7 +5,7 @@ import * as soap from 'soap';
 export class SoapHelperService {
   parser = xml2js.Parser();
   async createClient(address, endpoint) {
-    let client = await soap.createClientAsync(address, { endpoint, envelopeKey: 'ns1' });
+    let client = await soap.createClientAsync(address, { endpoint, envelopeKey: 'wsaa' });
     return client;
   }
   private groupChildren(obj) {

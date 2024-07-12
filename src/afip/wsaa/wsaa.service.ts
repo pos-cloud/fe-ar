@@ -19,7 +19,7 @@ export class WsaaService {
       uniqueId: 1,
     },
   };
-  private readonly cert: string = 'poscloud.crt';
+  private readonly cert: string = 'poscloud.pem';
   private readonly PRIVATEKEY: string = 'poscloud.key';
   private readonly PASSPHRASE: string = '';
   private readonly pathLogs: string = './logs';
@@ -29,6 +29,23 @@ export class WsaaService {
     this.address = this.getFilePath('', 'wsaa.wsdl');
   }
 
+  private formatDate(date) {
+    const pad = (number) => (number < 10 ? '0' : '') + number;
+
+    const year = date.getFullYear();
+    const month = pad(date.getMonth() + 1);
+    const day = pad(date.getDate());
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
+
+    const timezoneOffset = -date.getTimezoneOffset();
+    const sign = timezoneOffset >= 0 ? '+' : '-';
+    const offsetHours = pad(Math.floor(Math.abs(timezoneOffset) / 60));
+    const offsetMinutes = pad(Math.abs(timezoneOffset) % 60);
+  
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMinutes}`;
+  }
   private async signTRA(): Promise<string> {
     try {
       const inputFilePath = this.getFilePath('../resources', 'TRA.xml');
@@ -45,13 +62,12 @@ export class WsaaService {
       );
 
       const CMS = await this.extractSignedContent(outputFilePath);
+      console.log(CMS);
       await fs.unlink(outputFilePath);
 
       return CMS;
     } catch (error) {
-      this.logger.error(
-        `ERROR generating PKCS#7 signature: ${error.toString()}`,
-      );
+      this.logger.error(`ERROR generating CMS signature: ${error.toString()}`);
       throw new Error(JSON.stringify(error));
     }
   }
@@ -68,7 +84,7 @@ export class WsaaService {
   ): boolean {
     try {
       const result = spawnSync('openssl', [
-        'smime',
+        'cms',
         '-sign',
         '-in',
         inputFile,
@@ -78,8 +94,7 @@ export class WsaaService {
         cert,
         '-inkey',
         privateKey,
-        '-passin',
-        `pass:${passphrase}`,
+        '-nodetach',
         '-outform',
         'PEM',
       ]);
@@ -98,11 +113,12 @@ export class WsaaService {
   private async extractSignedContent(filePath: string): Promise<string> {
     const fileContent = await fs.readFile(filePath, 'utf8');
     console.log(fileContent);
-    const lines = fileContent.split('\n');
-    lines.splice(lines.length - 2, 2);
-    lines.splice(0, 1);
+    let lines = fileContent.split('\n');
+    lines.pop();
+    lines.pop();
+    lines.shift();
+
     let CMS = lines.join('\n');
-    console.log(CMS);
     return CMS;
   }
 
@@ -148,16 +164,23 @@ export class WsaaService {
   private async createTRA(): Promise<Object> {
     try {
       let traJson = {
-        loginTicketRequest: {
-          version: '1.0',
-          header: {
-            uniqueId: Math.floor(Date.now() / 1000),
-            generationTime: new Date(Date.now() - 60000).toISOString(),
-            expirationTime: new Date(Date.now() + 60000).toISOString(),
-          },
+        version: '1.0',
+        header: {
+          uniqueId: Math.floor(Date.now() / 1000),
+          generationTime: this.formatDate(new Date(Date.now() - 60000)),
+          expirationTime: this.formatDate(new Date(Date.now() + 60000)),
         },
       };
-      let xml = this.soapHelper.json2xml(traJson);
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<loginTicketRequest version="${traJson.version}">
+    <header>
+        <uniqueId>${traJson.header.uniqueId}</uniqueId>
+        <generationTime>${traJson.header.generationTime}</generationTime>
+        <expirationTime>${traJson.header.expirationTime}</expirationTime>
+    </header>
+    <service>wsfe</service>
+</loginTicketRequest>
+      `;
       const filePath = this.getFilePath('../resources', 'TRA.xml');
       const dirPath = path.dirname(filePath);
       try {
