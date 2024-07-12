@@ -8,8 +8,4 @@ export class AppService {
     private readonly wsaaService: WsaaService,
     private readonly wsfev1Service: Wsfev1Service,
   ) {}
-  async login(): void {
-    let response = await this.wsaaService.login();
-    return response;
-  }
 }
