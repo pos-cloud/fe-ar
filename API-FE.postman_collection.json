@@ -59,14 +59,20 @@
 		{
 			"name": "upload-cert",
 			"request": {
-				"method": "PUT",
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "formdata",
-					"formdata": []
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/Users/francoandroetto/Projects/api-fe/_keys/20378228922/poscloud.crt"
+						}
+					]
 				},
 				"url": {
-					"raw": "http://localhost:307/cert/upload",
+					"raw": "http://localhost:307/cert/upload-crt/1233314",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -74,7 +80,8 @@
 					"port": "307",
 					"path": [
 						"cert",
-						"upload"
+						"upload-crt",
+						"1233314"
 					]
 				}
 			},
