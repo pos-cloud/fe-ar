@@ -1,4 +1,3 @@
-
 interface TicketDeAcceso {
   header: {
     uniqueId: number;
