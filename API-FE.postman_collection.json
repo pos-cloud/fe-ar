@@ -1,0 +1,60 @@
+{
+	"info": {
+		"_postman_id": "f79fbc01-dbde-454a-82b0-b31d9e2a086f",
+		"name": "API-FE",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2214161",
+		"_collection_link": "https://pos-cloud.postman.co/workspace/pos-cloud~337882e2-6a25-41c4-aca7-3780a3fa4add/collection/2214161-f79fbc01-dbde-454a-82b0-b31d9e2a086f?action=share&source=collection_link&creator=2214161"
+	},
+	"item": [
+		{
+			"name": "generate-cert",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"companyName\": \"1234\",\n  \"companyCUIT\": \"20-12345679-9\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:307/cert",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "307",
+					"path": [
+						"cert"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "download cert",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:307/cert/20378228922/crs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "307",
+					"path": [
+						"cert",
+						"20378228922",
+						"crs"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
