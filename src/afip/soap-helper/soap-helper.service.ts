@@ -5,7 +5,10 @@ import * as soap from 'soap';
 export class SoapHelperService {
   parser = xml2js.Parser();
   async createClient(address, endpoint) {
-    let client = await soap.createClientAsync(address, { endpoint, envelopeKey: 'wsaa' });
+    let client = await soap.createClientAsync(address, {
+      endpoint,
+      envelopeKey: 'wsaa',
+    });
     return client;
   }
   private groupChildren(obj) {
@@ -42,9 +45,8 @@ export class SoapHelperService {
     return new Promise(async (resolve, reject) => {
       client[endpoint](
         data,
-        async function (err, res, rawResponse, soapHeader, rawRequest) {
+        async (err, res, rawResponse, soapHeader, rawRequest) => {
           try {
-            console.log(rawRequest);
             if (err) throw err;
             resolve(res);
           } catch (e) {

@@ -4,7 +4,7 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 
 import { SoapHelperService } from '../soap-helper/soap-helper.service';
-import { TicketDeAcceso } from '../../models';
+import { TicketDeAcceso, LoginCmsReturn } from '../../models';
 
 @Injectable()
 export class WsaaService {
@@ -43,7 +43,7 @@ export class WsaaService {
     const sign = timezoneOffset >= 0 ? '+' : '-';
     const offsetHours = pad(Math.floor(Math.abs(timezoneOffset) / 60));
     const offsetMinutes = pad(Math.abs(timezoneOffset) % 60);
-  
+
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMinutes}`;
   }
   private async signTRA(): Promise<string> {
@@ -62,7 +62,6 @@ export class WsaaService {
       );
 
       const CMS = await this.extractSignedContent(outputFilePath);
-      console.log(CMS);
       await fs.unlink(outputFilePath);
 
       return CMS;
@@ -112,7 +111,6 @@ export class WsaaService {
   }
   private async extractSignedContent(filePath: string): Promise<string> {
     const fileContent = await fs.readFile(filePath, 'utf8');
-    console.log(fileContent);
     let lines = fileContent.split('\n');
     lines.pop();
     lines.pop();
@@ -204,11 +202,19 @@ export class WsaaService {
       let xml = {
         in0: cms,
       };
-      let response = await this.soapHelper.callEndpoint(
+      let response: LoginCmsReturn = await this.soapHelper.callEndpoint(
         client,
         'loginCms',
         xml,
       );
+      const filePath = this.getFilePath('../resources', 'TA.xml');
+      const dirPath = path.dirname(filePath);
+      try {
+        await fs.access(dirPath);
+      } catch {
+        await fs.mkdir(dirPath, { recursive: true });
+      }
+      await fs.writeFile(filePath, `${response.loginCmsReturn}`, 'utf8');
       return response;
     } catch (error) {
       throw error;

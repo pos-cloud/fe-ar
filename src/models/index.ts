@@ -1,4 +1,3 @@
-
 interface TicketDeAcceso {
   header: {
     uniqueId: number;
@@ -6,5 +5,8 @@ interface TicketDeAcceso {
     expirationTime: string;
   };
 }
+interface LoginCmsReturn {
+  loginCmsReturn?: string;
+}
 
-export type { TicketDeAcceso };
+export type { TicketDeAcceso, LoginCmsReturn };
