@@ -41,7 +41,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:307/cert/20378228922/crs",
+					"raw": "http://localhost:307/cert/20378228922/csr",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -50,7 +50,59 @@
 					"path": [
 						"cert",
 						"20378228922",
-						"crs"
+						"csr"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "upload-cert",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "http://localhost:307/cert/upload",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "307",
+					"path": [
+						"cert",
+						"upload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "validate transaction",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"config\": {\n        \"companyIdentificationValue\": 20378228922,\n        \"vatCondition\": 6\n    },\n    \"transaction\": {\n        \"origin\": 0,\n        \"letter\": \"C\",\n        \"exempt\": 1000,\n        \"totalPrice\": 2210,\n        \"taxes\": [\n            {\n                \"percentage\": 21,\n                \"taxBase\": 1000,\n                \"taxAmount\": 210,\n                \"_id\": \"6692f1f419b3a5f03320f51b\",\n                \"tax\": {\n                    \"_id\": \"5b4d45ca5b96785f28fb1e6f\",\n                    \"operationType\": \"U\",\n                    \"creationDate\": \"2018-07-17T01:24:07.000Z\",\n                    \"creationUser\": \"5b4d4009cb51075064d07903\",\n                    \"name\": \"IVA 21%\",\n                    \"__v\": 0,\n                    \"amount\": 0,\n                    \"classification\": \"Impuesto\",\n                    \"code\": \"5\",\n                    \"lastNumber\": 0,\n                    \"percentage\": 21,\n                    \"taxBase\": \"Gravado\",\n                    \"type\": \"Nacional\",\n                    \"updateDate\": \"2019-06-11T06:05:01.000Z\",\n                    \"updateUser\": \"5b4d4009cb51075064d07903\"\n                }\n            }\n        ],\n        \"type\": {\n            \"electronics\": true,\n            \"transactionMovement\": \"Venta\",\n            \"codes\": [\n                {\n                    \"code\": 0,\n                    \"_id\": \"6692f06c19b3a5f03320f3e1\",\n                    \"letter\": \"A\"\n                },\n                {\n                    \"code\": 0,\n                    \"_id\": \"6692f06c19b3a5f03320f3e2\",\n                    \"letter\": \"B\"\n                },\n                {\n                    \"code\": 0,\n                    \"_id\": \"6692f06c19b3a5f03320f3e3\",\n                    \"letter\": \"C\"\n                },\n                {\n                    \"code\": null,\n                    \"_id\": \"6692f06c19b3a5f03320f3e4\",\n                    \"letter\": \"D\"\n                },\n                {\n                    \"code\": null,\n                    \"_id\": \"6692f06c19b3a5f03320f3e5\",\n                    \"letter\": \"E\"\n                },\n                {\n                    \"code\": null,\n                    \"_id\": \"6692f06c19b3a5f03320f3e6\",\n                    \"letter\": \"M\"\n                },\n                {\n                    \"code\": null,\n                    \"_id\": \"6692f06c19b3a5f03320f3e7\",\n                    \"letter\": \"R\"\n                },\n                {\n                    \"code\": null,\n                    \"_id\": \"6692f06c19b3a5f03320f3e8\",\n                    \"letter\": \"Z\"\n                },\n                {\n                    \"code\": null,\n                    \"_id\": \"6692f06c19b3a5f03320f3e9\",\n                    \"letter\": \"T\"\n                }\n            ]\n        },\n        \"company\": {\n            \"identificationType\": {\n                \"code\": \"96\"\n            },\n            \"identificationValue\": \"999999999\"\n        }\n    },\n    \"optionalAFIP\": {\n        \"id\": null,\n        \"value\": null\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:307/validate-transaction",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "307",
+					"path": [
+						"validate-transaction"
 					]
 				}
 			},
