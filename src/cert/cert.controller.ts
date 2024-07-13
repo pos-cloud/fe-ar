@@ -1,10 +1,24 @@
-import { Controller, Post, Body, Res, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  Get,
+  Param,
+  UseInterceptors,
+  UploadedFile,
+  HttpException,
+  HttpStatus,
+  Req,
+} from '@nestjs/common';
 import { CertService } from './cert.service';
 import { CreateCertDto } from './create-cert.dto';
 import { Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
-
+import { extname } from 'path';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 @Controller('cert')
 export class CertController {
   constructor(private readonly certService: CertService) {}
@@ -42,5 +56,52 @@ export class CertController {
         .status(500)
         .send(`Error al descargar el archivo .csr: ${error.message}`);
     }
+  }
+
+  @Post('upload-crt/:companyCUIT')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: (req, file, callback) => {
+          const { companyCUIT } = req.params;
+          const uploadPath = `./_keys/${companyCUIT}/`;
+          callback(null, uploadPath);
+        },
+        filename: (req, file, callback) => {
+          const ext = extname(file.originalname);
+          const filename = `poscloud${ext}`;
+          callback(null, filename);
+        },
+      }),
+      fileFilter: (req, file, callback) => {
+        if (
+          file.mimetype !== 'application/x-x509-ca-cert' &&
+          file.mimetype !== 'application/pkix-cert'
+        ) {
+          return callback(
+            new HttpException(
+              'Only .crt files are allowed!',
+              HttpStatus.BAD_REQUEST,
+            ),
+            false,
+          );
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  async uploadCrt(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('companyCUIT') companyCUIT: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    if (!file) {
+      throw new HttpException('No file uploaded!', HttpStatus.BAD_REQUEST);
+    }
+
+    return res.status(201).json({
+      message: 'Archivo subido exitosamente!',
+    });
   }
 }
