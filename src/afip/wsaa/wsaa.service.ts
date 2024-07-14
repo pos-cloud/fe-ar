@@ -20,6 +20,7 @@ export class WsaaService {
     },
   };
   private readonly cert: string = 'poscloud.pem';
+  private readonly keysFolder: string = '../../../_keys';
   private readonly PRIVATEKEY: string = 'poscloud.key';
   private readonly PASSPHRASE: string = '';
   private readonly pathLogs: string = './logs';
@@ -46,12 +47,21 @@ export class WsaaService {
 
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMinutes}`;
   }
-  private async signTRA(): Promise<string> {
+  private async signTRA(cuit: string): Promise<string> {
     try {
-      const inputFilePath = this.getFilePath('../resources', 'TRA.xml');
-      const outputFilePath = this.getFilePath('../resources', 'TRA.tmp');
-      const certPath = this.getFilePath('../resources', this.cert);
-      const privateKeyPath = this.getFilePath('../resources', this.PRIVATEKEY);
+      const inputFilePath = this.getFilePath(`../resources/${cuit}`, 'TRA.xml');
+      const outputFilePath = this.getFilePath(
+        `../resources/${cuit}`,
+        'TRA.tmp',
+      );
+      const certPath = this.getFilePath(
+        `${this.keysFolder}/${cuit}`,
+        this.cert,
+      );
+      const privateKeyPath = this.getFilePath(
+        `${this.keysFolder}/${cuit}`,
+        this.PRIVATEKEY,
+      );
 
       await this.signWithOpenSSL(
         inputFilePath,
@@ -123,7 +133,7 @@ export class WsaaService {
   async getExpiration(): Promise<string | boolean> {
     try {
       if (!this.TA) {
-        const TAFilePath = path.join('../recursos', this.TAFilename);
+        const TAFilePath = path.join('../resources', this.TAFilename);
         try {
           const TAFile = await fs.readFile(TAFilePath, 'utf8');
           const TAObject = await this.soapHelper.xml2Array(TAFile);
@@ -148,18 +158,18 @@ export class WsaaService {
     }
   }
 
-  async generarTA(): Promise<Object> {
+  async generarTA(cuit: string): Promise<Object> {
     try {
-      let xml = await this.createTRA();
-      let cms = await this.signTRA();
-      let response = await this.callWSAA(cms);
-      return xml;
+      let xml = await this.createTRA(cuit);
+      let cms = await this.signTRA(cuit);
+      let response = await this.callWSAA(cms, cuit);
+      return response;
     } catch (error) {
       throw error;
     }
   }
 
-  private async createTRA(): Promise<Object> {
+  private async createTRA(cuit: string): Promise<Object> {
     try {
       let traJson = {
         version: '1.0',
@@ -179,7 +189,7 @@ export class WsaaService {
     <service>wsfe</service>
 </loginTicketRequest>
       `;
-      const filePath = this.getFilePath('../resources', 'TRA.xml');
+      const filePath = this.getFilePath(`../resources/${cuit}`, 'TRA.xml');
       const dirPath = path.dirname(filePath);
       try {
         await fs.access(dirPath);
@@ -192,7 +202,7 @@ export class WsaaService {
       throw error;
     }
   }
-  private async callWSAA(cms: Object): Promise<Object> {
+  private async callWSAA(cms: Object, cuit: string): Promise<Object> {
     try {
       let client = await this.soapHelper.createClient(
         this.address,
@@ -207,7 +217,7 @@ export class WsaaService {
         'loginCms',
         xml,
       );
-      const filePath = this.getFilePath('../resources', 'TA.xml');
+      const filePath = this.getFilePath(`../resources/${cuit}`, 'TA.xml');
       const dirPath = path.dirname(filePath);
       try {
         await fs.access(dirPath);
