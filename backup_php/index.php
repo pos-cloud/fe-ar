@@ -118,7 +118,6 @@ $wsfev1 = new WSFEV1($build, $path, $database, $condVta, $CUIT);
 // Carga el archivo TA.xml
 $wsfev1->openTA();
 
-// TRANSACTION ENDPOINT USE HERE, WHY MIX IT WITH CONFIG BEFORE????
 // VALIDATE IF COMPANY, if not, use default values, initialize early please
 $doctipo;
 $docnumber;

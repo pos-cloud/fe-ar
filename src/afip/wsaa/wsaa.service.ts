@@ -13,11 +13,13 @@ export class WsaaService {
     'https://wsaahomo.afip.gov.ar/ws/services/LoginCms';
   private readonly TAFilename: string = 'TA.xml';
   private TA: TicketDeAcceso = {
-    header: {
-      expirationTime: '',
-      generationTime: '',
-      uniqueId: 1,
-    },
+    header: [
+      {
+        expirationTime: [''],
+        generationTime: [''],
+        uniqueId: ['1'],
+      },
+    ],
   };
   private readonly cert: string = 'poscloud.pem';
   private readonly keysFolder: string = '../../../_keys';
@@ -130,26 +132,34 @@ export class WsaaService {
     return CMS;
   }
 
-  async getExpiration(): Promise<string | boolean> {
+  async getTA(cuit: string): Promise<TicketDeAcceso | null> {
     try {
-      if (!this.TA) {
-        const TAFilePath = path.join('../resources', this.TAFilename);
-        try {
-          const TAFile = await fs.readFile(TAFilePath, 'utf8');
-          const TAObject = await this.soapHelper.xml2Array(TAFile);
-          this.TA = TAObject;
-        } catch (error) {
-          this.logger.error(`Error reading TA file: ${error.message}`);
-          return false;
-        }
+      if (this.TA) {
+        const TAFilePath = path.join(
+          __dirname,
+          `../resources/${cuit}`,
+          this.TAFilename,
+        );
+        const TAFile = await fs.readFile(TAFilePath, 'utf8');
+        const TAObject = await this.soapHelper.xml2Array(TAFile);
+        this.TA = TAObject.loginTicketResponse;
       }
+      return this.TA;
+    } catch (error) {
+      this.logger.error(`Error reading TA file: ${error.message}`);
+      return null;
+    }
+  }
+  async getIfNotExpired(cuit: string): Promise<string | boolean> {
+    try {
+      await this.getTA(cuit);
 
-      if (this.TA && this.TA.header && this.TA.header.expirationTime) {
-        const expirationTime = this.TA.header.expirationTime;
+      if (this.TA && this.TA.header && this.TA.header[0].expirationTime) {
+        const expirationTime = this.TA.header[0].expirationTime[0];
         const formattedExpirationTime = expirationTime
           .replace('T', ' ')
           .substring(0, 19);
-        return formattedExpirationTime;
+        return true;
       }
 
       return false;

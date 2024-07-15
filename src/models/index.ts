@@ -1,12 +1,87 @@
 interface TicketDeAcceso {
-  header: {
-    uniqueId: number;
-    generationTime: string;
-    expirationTime: string;
-  };
+  header: [
+    {
+      uniqueId: Array<string>;
+      generationTime: Array<string>;
+      expirationTime: Array<string>;
+      source?: Array<string>;
+      destination?: Array<string>;
+    },
+  ];
+  credentials?: [
+    {
+      token: Array<string>;
+      sign: Array<string>;
+    },
+  ];
 }
 interface LoginCmsReturn {
   loginCmsReturn?: string;
 }
+interface TransactionConfig {
+  companyIdentificationValue: number;
+  vatCondition: number;
+}
+interface Transaction {
+  origin: number;
+  letter: string;
+  exempt: number;
+  totalPrice: number;
+  taxes: [
+    {
+      percentage: number;
+      taxBase: number;
+      taxAmount: number;
+      _id: string;
+      tax: {
+        _id: string;
+        operationType: string;
+        creationDate: string;
+        creationUser: string;
+        name: string;
+        __v: number;
+        amount: number;
+        classification: string;
+        code: string;
+        lastNumber: number;
+        percentage: number;
+        taxBase: string;
+        type: string;
+        updateDate: string;
+        updateUser: string;
+      };
+    },
+  ];
+  type: {
+    electronics: boolean;
+    transactionMovement: string;
+    codes: [
+      {
+        code: number;
+        _id: string;
+        letter: string;
+      },
+    ];
+  };
+  company: {
+    identificationType: {
+      code: string;
+    };
+    identificationValue: string;
+  };
+  optionalAFIP: any;
+}
 
-export type { TicketDeAcceso, LoginCmsReturn };
+interface FECompUltimoAutorizado {
+  CbteNro: number;
+  CbteTipo: number;
+  PtoVta: number;
+}
+
+export type {
+  TicketDeAcceso,
+  LoginCmsReturn,
+  Transaction,
+  TransactionConfig,
+  FECompUltimoAutorizado,
+};
