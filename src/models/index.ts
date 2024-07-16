@@ -91,8 +91,8 @@ interface FECAESolicitar {
   FeDetResp?: {
     FECAEDetResponse: {
       Concepto: string;
-      DocTipo: number;
-      DocNro: number;
+      DocTipo: string;
+      DocNro: string;
       CbteDesde: number;
       CbteHasta: number;
       CbteFch: string;

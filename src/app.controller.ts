@@ -45,7 +45,7 @@ export class AppController {
       let impiva = 0;
       let impneto = 0;
       let exempt = 0;
-      if (transaction.letter == 'C') {
+      if (transaction.letter !== 'C') {
         exempt = transaction.exempt;
         if (transaction.taxes.length > 0) {
           for (let i = 0; i < transaction.taxes.length; i++) {
@@ -53,9 +53,9 @@ export class AppController {
             impneto = impneto + transaction.taxes[i].taxBase;
             impiva = impiva + transaction.taxes[i].taxAmount;
           }
-        } else {
-          impneto = impneto + transaction.totalPrice;
         }
+      } else {
+        impneto = impneto + transaction.totalPrice;
       }
       let datosDeUltimoComprobanteAutorizado =
         await this.wsfev1Service.buscarUltimoComprobanteAutorizado(
@@ -114,7 +114,7 @@ export class AppController {
         regfeiva['Importe'] = 0;
       }
 
-      let cae = await this.wsfev1Service.solicitarCAE(
+      let caeData = await this.wsfev1Service.solicitarCAE(
         TA.credentials[0].token,
         TA.credentials[0].sign,
         cuit,
@@ -157,10 +157,18 @@ export class AppController {
 
       */
 
-      return cae;
+      return {
+        status: 'OK',
+        number: nro1,
+        CAE: caeData.FeDetResp.FECAEDetResponse[0].CAE,
+        CAEExpirationDate: caeData.FeDetResp.FECAEDetResponse[0].CAEFchVto,
+      };
     } catch (error) {
       console.log(error);
-      throw error;
+      return {
+        status: 'Error',
+        message: error.message,
+      };
     }
   }
 }
