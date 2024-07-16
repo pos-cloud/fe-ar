@@ -62,7 +62,6 @@ export class WsaaService {
         outputFilePath,
         certPath,
         privateKeyPath,
-        this.PASSPHRASE,
       );
 
       const CMS = await this.extractSignedContent(outputFilePath);
@@ -83,7 +82,6 @@ export class WsaaService {
     outputFile: string,
     cert: string,
     privateKey: string,
-    passphrase: string,
   ): boolean {
     try {
       const result = spawnSync('openssl', [
@@ -115,12 +113,12 @@ export class WsaaService {
   }
   private async extractSignedContent(filePath: string): Promise<string> {
     const fileContent = await fs.readFile(filePath, 'utf8');
-    let lines = fileContent.split('\n');
+    const lines = fileContent.split('\n');
     lines.pop();
     lines.pop();
     lines.shift();
 
-    let CMS = lines.join('\n');
+    const CMS = lines.join('\n');
     return CMS;
   }
 
@@ -162,9 +160,9 @@ export class WsaaService {
 
   async generarTA(cuit: string): Promise<Object> {
     try {
-      let xml = await this.createTRA(cuit);
-      let cms = await this.signTRA(cuit);
-      let response = await this.callWSAA(cms, cuit);
+      const xml = await this.createTRA(cuit);
+      const cms = await this.signTRA(cuit);
+      const response = await this.callWSAA(cms, cuit);
       return response;
     } catch (error) {
       throw error;
@@ -173,7 +171,7 @@ export class WsaaService {
 
   private async createTRA(cuit: string): Promise<Object> {
     try {
-      let traJson = {
+      const traJson = {
         version: '1.0',
         header: {
           uniqueId: Math.floor(Date.now() / 1000),
@@ -181,7 +179,7 @@ export class WsaaService {
           expirationTime: this.formatDate(new Date(Date.now() + 60000)),
         },
       };
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <loginTicketRequest version="${traJson.version}">
     <header>
         <uniqueId>${traJson.header.uniqueId}</uniqueId>
@@ -206,15 +204,15 @@ export class WsaaService {
   }
   private async callWSAA(cms: Object, cuit: string): Promise<Object> {
     try {
-      let client = await this.soapHelper.createClient(
+      const client = await this.soapHelper.createClient(
         this.address,
         this.endpoint,
       );
 
-      let xml = {
+      const xml = {
         in0: cms,
       };
-      let response: LoginCmsReturn = await this.soapHelper.callEndpoint(
+      const response: LoginCmsReturn = await this.soapHelper.callEndpoint(
         client,
         'loginCms',
         xml,

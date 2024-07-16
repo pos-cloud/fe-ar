@@ -5,14 +5,14 @@ import * as soap from 'soap';
 export class SoapHelperService {
   parser = xml2js.Parser();
   async createClient(address, endpoint) {
-    let client = await soap.createClientAsync(address, {
+    const client = await soap.createClientAsync(address, {
       endpoint,
       envelopeKey: 'wsaa',
     });
     return client;
   }
   private groupChildren(obj) {
-    for (let prop in obj) {
+    for (const prop in obj) {
       if (typeof obj[prop] === 'object') {
         this.groupChildren(obj[prop]);
       } else {
@@ -25,8 +25,8 @@ export class SoapHelperService {
     return obj;
   }
   json2xml(json: Object): Object {
-    var builder = new xml2js.Builder();
-    let parsedJson = this.groupChildren(json);
+    const builder = new xml2js.Builder();
+    const parsedJson = this.groupChildren(json);
     return builder.buildObject(parsedJson);
   }
   xml2Array(xml: string): Promise<any> {
