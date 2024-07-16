@@ -1,5 +1,5 @@
 interface TicketDeAcceso {
-  header: [
+  header?: [
     {
       uniqueId: Array<string>;
       generationTime: Array<string>;
@@ -78,10 +78,42 @@ interface FECompUltimoAutorizado {
   PtoVta: number;
 }
 
+interface FECAESolicitar {
+  FeCabResp?: {
+    Cuit: string;
+    PtoVta: number;
+    CbteTipo: number;
+    FchProceso: string;
+    CantReg: number;
+    Resultado: string;
+    Reproceso: string;
+  };
+  FeDetResp?: {
+    FECAEDetResponse: {
+      Concepto: string;
+      DocTipo: number;
+      DocNro: number;
+      CbteDesde: number;
+      CbteHasta: number;
+      CbteFch: string;
+      Resultado: string;
+      CAE: string;
+      CAEFchVto: string;
+    };
+  };
+  Events?: {
+    Evt: {
+      Code: number;
+      Msg: string;
+    };
+  };
+}
+
 export type {
   TicketDeAcceso,
   LoginCmsReturn,
   Transaction,
   TransactionConfig,
   FECompUltimoAutorizado,
+  FECAESolicitar,
 };

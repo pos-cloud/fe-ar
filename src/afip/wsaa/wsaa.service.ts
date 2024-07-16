@@ -12,16 +12,8 @@ export class WsaaService {
   private readonly endpoint =
     'https://wsaahomo.afip.gov.ar/ws/services/LoginCms';
   private readonly TAFilename: string = 'TA.xml';
-  private TA: TicketDeAcceso = {
-    header: [
-      {
-        expirationTime: [''],
-        generationTime: [''],
-        uniqueId: ['1'],
-      },
-    ],
-  };
-  private readonly cert: string = 'poscloud.pem';
+  private TA: TicketDeAcceso = {};
+  private readonly cert: string = 'poscloud.crt';
   private readonly keysFolder: string = '../../../_keys';
   private readonly PRIVATEKEY: string = 'poscloud.key';
   private readonly PASSPHRASE: string = '';
@@ -134,7 +126,7 @@ export class WsaaService {
 
   async getTA(cuit: string): Promise<TicketDeAcceso | null> {
     try {
-      if (this.TA) {
+      if (!this.TA.credentials) {
         const TAFilePath = path.join(
           __dirname,
           `../resources/${cuit}`,

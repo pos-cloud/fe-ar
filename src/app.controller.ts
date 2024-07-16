@@ -9,13 +9,14 @@ export class AppController {
     private readonly wsfev1Service: Wsfev1Service,
   ) {}
 
-  @Post(':cuit')
+  @Post()
   async test(
     @Body('config') config: TransactionConfig,
     @Body('transaction') transaction: Transaction,
-    @Param('cuit') cuit: string,
   ): Promise<any> {
     try {
+      let cuit = `${config.companyIdentificationValue}`;
+      let vatCondition = config.vatCondition;
       if (!transaction.type.codes.length) {
         throw new Error('Códigos AFIP no definidos');
       }
@@ -35,7 +36,11 @@ export class AppController {
 
       let ptovta = transaction.origin;
       let tipocbte = tipcomp;
-      let cbteFecha = new Date();
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      let cbteFecha = `${year}${month}${day}`;
       let baseimp = 0;
       let impiva = 0;
       let impneto = 0;
@@ -52,14 +57,107 @@ export class AppController {
           impneto = impneto + transaction.totalPrice;
         }
       }
-      let nro = await this.wsfev1Service.FECompUltimoAutorizado(
-        TA.credentials[0].token[0],
-        TA.credentials[0].sign[0],
+      let datosDeUltimoComprobanteAutorizado =
+        await this.wsfev1Service.buscarUltimoComprobanteAutorizado(
+          TA.credentials[0].token[0],
+          TA.credentials[0].sign[0],
+          cuit,
+          ptovta,
+          tipocbte,
+        );
+      let nro = datosDeUltimoComprobanteAutorizado.CbteNro;
+      if (typeof nro !== 'number') {
+        throw new Error('Último comprobante autorizado no es numérico');
+      }
+      let nro1 = nro + 1;
+      let regfe = {};
+      regfe['CbteTipo'] = tipocbte;
+      regfe['Concepto'] = 1; //Productos: 1 ---- Servicios: 2 ---- Prod y Serv: 3
+      regfe['DocTipo'] = doctipo; //80=CUIT -- 96 DNI --- 99 general cons final
+      regfe['DocNro'] = docnumber; //0 para consumidor final / importe menor a 1000
+      regfe['CbteFch'] = cbteFecha; // fecha emision de factura
+      regfe['ImpNeto'] = impneto; // Imp Neto
+      regfe['ImpTotConc'] = exempt; // no gravado
+      regfe['ImpIVA'] = impiva; // IVA liquidado
+      regfe['ImpTrib'] = 0; // otros tributos
+      regfe['ImpOpEx'] = 0; // operacion exentas
+      regfe['ImpTotal'] = transaction['totalPrice']; // total de la factura. ImpNeto + ImpTotConc + ImpIVA + ImpTrib + ImpOpEx
+      regfe['FchServDesde'] = null; // solo concepto 2 o 3
+      regfe['FchServHasta'] = null; // solo concepto 2 o 3
+      regfe['FchVtoPago'] = null; // solo concepto 2 o 3
+      regfe['MonId'] = 'PES'; // Id de moneda 'PES'
+      regfe['MonCotiz'] = 1; // Cotizacion moneda. Solo exportacion
+
+      // Comprobantes asociados (solo notas de crédito y débito):
+      let regfeasoc = {};
+      regfeasoc['Tipo'] = 91; //91; //tipo 91|5
+      regfeasoc['PtoVta'] = 1;
+      regfeasoc['Nro'] = 1;
+
+      // Detalle de otros tributos
+      let regfetrib = {};
+      regfetrib['Id'] = 1;
+      regfetrib['Desc'] = '';
+      regfetrib['BaseImp'] = 0;
+      regfetrib['Alic'] = 0;
+      regfetrib['Importe'] = 0;
+
+      let regfeiva = {};
+
+      if (baseimp !== 0) {
+        regfeiva['Id'] = 5;
+        regfeiva['BaseImp'] = impneto;
+        regfeiva['Importe'] = impiva;
+      } else {
+        regfeiva['Id'] = 0;
+        regfeiva['BaseImp'] = 0;
+        regfeiva['Importe'] = 0;
+      }
+
+      let cae = await this.wsfev1Service.solicitarCAE(
+        TA.credentials[0].token,
+        TA.credentials[0].sign,
         cuit,
+        vatCondition,
+        nro1,
         ptovta,
-        tipocbte,
+        regfe,
+        regfeasoc,
+        regfetrib,
+        regfeiva,
       );
-      return nro;
+      /*
+	if ($caenum != "") {
+		
+		$CAEExpirationDate = str_split($caefvt, 2)[3]."/".str_split($caefvt, 2)[2]."/".str_split($caefvt, 4)[0]." 00:00:00";
+		
+		$result ='{
+			"status":"OK",
+			"number":'.$numero.',
+			"CAE":"'.$caenum.'",
+			"CAEExpirationDate":"'.$CAEExpirationDate.'"
+		}';
+		file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Response - ".$result."\n", FILE_APPEND | LOCK_EX);
+		echo $result;
+	} else {
+		if(empty($err)) {
+			$err ='{
+				"status":"err",
+				"code":"'.$wsfev1->Code.'",
+				"message":"'.$wsfev1->Msg.'",
+				"observationCode":"'.$wsfev1->ObsCod.'",
+				"observationMessage":"'.$wsfev1->ObsMsg.'",
+				"observationCode2":"'.$wsfev1->ObsCode2.'",
+				"observationMessage2":"'.$wsfev1->ObsMsg2.'"
+			}';
+			file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Response - ".$err."\n", FILE_APPEND | LOCK_EX);
+			echo $err;
+		}
+	}
+
+      */
+
+      return cae;
     } catch (error) {
       console.log(error);
       throw error;

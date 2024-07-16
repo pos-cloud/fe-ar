@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as path from 'path';
 import { SoapHelperService } from '../soap-helper/soap-helper.service';
-import { FECompUltimoAutorizado } from '../../models';
+import { FECompUltimoAutorizado, FECAESolicitar } from '../../models';
 
 @Injectable()
 export class Wsfev1Service {
@@ -30,7 +30,7 @@ export class Wsfev1Service {
       throw error;
     }
   }
-  async FECompUltimoAutorizado(
+  async buscarUltimoComprobanteAutorizado(
     Token,
     Sign,
     Cuit,
@@ -60,8 +60,88 @@ export class Wsfev1Service {
       throw error;
     }
   }
-  async FECAESolicitar(): Promise<void> {
+  async solicitarCAE(
+    Token,
+    Sign,
+    Cuit,
+    vatCondition,
+    cbte,
+    PtoVta,
+    regfe,
+    regfeasoc,
+    regfetrib,
+    regfeiva,
+  ): Promise<FECAESolicitar> {
     try {
+      let client = await this.soapHelper.createClient(
+        this.address,
+        this.endpoint,
+      );
+
+      if (cbte == '0') {
+        // para
+        cbte = '1';
+      }
+
+      let xml = {
+        Auth: { Token, Sign, Cuit },
+        FeCAEReq: {
+          FeCabReq: {
+            CantReg: 1,
+            PtoVta,
+            CbteTipo: regfe['CbteTipo'],
+          },
+          FeDetReq: {
+            FECAEDetRequest: {
+              Concepto: regfe.Concepto,
+              DocTipo: regfe.DocTipo,
+              DocNro: regfe.DocNro,
+              CbteDesde: cbte,
+              CbteHasta: cbte,
+              CbteFch: regfe.CbteFch,
+              ImpNeto: regfe['ImpNeto'],
+              ImpTotConc: regfe['ImpTotConc'],
+              ImpIVA: regfe['ImpIVA'],
+              ImpTrib: regfe['ImpTrib'],
+              ImpOpEx: regfe['ImpOpEx'],
+              ImpTotal: regfe['ImpTotal'],
+              FchServDesde: regfe['FchServDesde'],
+              FchServHasta: regfe['FchServHasta'],
+              FchVtoPago: regfe['FchVtoPago'],
+              MonId: regfe['MonId'],
+              MonCotiz: regfe['MonCotiz'],
+              Tributos: {
+                Tributo: {
+                  Id: regfetrib['Id'],
+                  Desc: regfetrib['Desc'],
+                  BaseImp: regfetrib['BaseImp'],
+                  Alic: regfetrib['Alic'],
+                  Importe: regfetrib['Importe'],
+                },
+              },
+              Iva: {
+                AlicIva: {
+                  Id: regfeiva['Id'],
+                  BaseIm: regfeiva['BaseImp'],
+                  Importe: regfeiva['Importe'],
+                },
+              },
+            },
+          },
+        },
+      };
+
+      if (vatCondition == 6 || regfeiva['Id'] === 0) {
+        xml['FeCAEReq']['FeDetReq']['FECAEDetRequest']['Iva'] = null;
+      }
+      let aux = await this.soapHelper.callEndpoint(
+        client,
+        'FECAESolicitar',
+        xml,
+      );
+      let response: FECAESolicitar = (aux as { FECAESolicitarResult: unknown })
+        .FECAESolicitarResult as FECAESolicitar;
+      return response;
     } catch (error) {
       throw error;
     }
