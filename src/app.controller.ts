@@ -9,7 +9,7 @@ export class AppController {
     private readonly wsfev1Service: Wsfev1Service,
   ) {}
 
-  @Post()
+  @Post('validate-transaction')
   async test(
     @Body('config') config: TransactionConfig,
     @Body('transaction') transaction: Transaction,
@@ -162,12 +162,5 @@ export class AppController {
       console.log(error);
       throw error;
     }
-  }
-  @Post('validate-transaction')
-  transaction(
-    @Body('config') config: Object,
-    @Body('transaction') transaction: Object,
-  ): Object {
-    return {};
   }
 }
