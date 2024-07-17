@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { WsaaService } from './afip/wsaa/wsaa.service';
 import { Wsfev1Service } from './afip/wsfev1/wsfev1.service';
-import { Transaction, TransactionConfig } from './models';
+import { Transaction, TransactionConfig, CanceledTransaction } from './models';
 @Controller()
 export class AppController {
   constructor(
@@ -13,6 +13,7 @@ export class AppController {
   async test(
     @Body('config') config: TransactionConfig,
     @Body('transaction') transaction: Transaction,
+    @Body('canceledTransactions') canceledTransactions: CanceledTransaction,
   ): Promise<any> {
     try {
       let cuit = `${config.companyIdentificationValue}`;
@@ -114,6 +115,18 @@ export class AppController {
         regfeiva['Importe'] = 0;
       }
 
+      let opcional = {
+        Id: transaction.optionalAFIP.id,
+        Valor: transaction.optionalAFIP.value,
+      };
+
+      let canceled = !canceledTransactions
+        ? null
+        : {
+            Tipo: canceledTransactions.code,
+            PtoVta: canceledTransactions.origin,
+            Nro: canceledTransactions.number,
+          };
       let caeData = await this.wsfev1Service.solicitarCAE(
         TA.credentials[0].token,
         TA.credentials[0].sign,
@@ -125,37 +138,9 @@ export class AppController {
         regfeasoc,
         regfetrib,
         regfeiva,
+        opcional,
+        canceled,
       );
-      /*
-	if ($caenum != "") {
-		
-		$CAEExpirationDate = str_split($caefvt, 2)[3]."/".str_split($caefvt, 2)[2]."/".str_split($caefvt, 4)[0]." 00:00:00";
-		
-		$result ='{
-			"status":"OK",
-			"number":'.$numero.',
-			"CAE":"'.$caenum.'",
-			"CAEExpirationDate":"'.$CAEExpirationDate.'"
-		}';
-		file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Response - ".$result."\n", FILE_APPEND | LOCK_EX);
-		echo $result;
-	} else {
-		if(empty($err)) {
-			$err ='{
-				"status":"err",
-				"code":"'.$wsfev1->Code.'",
-				"message":"'.$wsfev1->Msg.'",
-				"observationCode":"'.$wsfev1->ObsCod.'",
-				"observationMessage":"'.$wsfev1->ObsMsg.'",
-				"observationCode2":"'.$wsfev1->ObsCode2.'",
-				"observationMessage2":"'.$wsfev1->ObsMsg2.'"
-			}';
-			file_put_contents($pathLogs, date("d/m/Y h:i:s") ." - Response - ".$err."\n", FILE_APPEND | LOCK_EX);
-			echo $err;
-		}
-	}
-
-      */
 
       return {
         status: 'OK',

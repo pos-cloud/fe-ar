@@ -72,6 +72,14 @@ interface Transaction {
   optionalAFIP: any;
 }
 
+interface CanceledTransaction {
+  typeId: string;
+  code: number;
+  origin: number;
+  letter: string;
+  number: number;
+}
+
 interface FECompUltimoAutorizado {
   CbteNro: number;
   CbteTipo: number;
@@ -114,6 +122,7 @@ export type {
   LoginCmsReturn,
   Transaction,
   TransactionConfig,
+  CanceledTransaction,
   FECompUltimoAutorizado,
   FECAESolicitar,
 };
