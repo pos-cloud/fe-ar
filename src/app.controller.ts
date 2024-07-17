@@ -1,11 +1,7 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { WsaaService } from './afip/wsaa/wsaa.service';
 import { Wsfev1Service } from './afip/wsfev1/wsfev1.service';
-<<<<<<< HEAD
 import { Transaction, TransactionConfig, CanceledTransaction } from './models';
-=======
-import { canceledTransactions, Transaction, TransactionConfig } from './models';
->>>>>>> b6d5e4ddefe8cb56c3f231ceae5555ea9365fadc
 @Controller()
 export class AppController {
   constructor(
@@ -17,11 +13,7 @@ export class AppController {
   async validateTransaction(
     @Body('config') config: TransactionConfig,
     @Body('transaction') transaction: Transaction,
-<<<<<<< HEAD
     @Body('canceledTransactions') canceledTransactions: CanceledTransaction,
-=======
-    @Body('canceledTransactions') canceledTransactions: canceledTransactions,
->>>>>>> b6d5e4ddefe8cb56c3f231ceae5555ea9365fadc
   ): Promise<any> {
     try {
       const cuit = `${config.companyIdentificationValue}`;
