@@ -1,7 +1,11 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { WsaaService } from './afip/wsaa/wsaa.service';
 import { Wsfev1Service } from './afip/wsfev1/wsfev1.service';
+<<<<<<< HEAD
 import { Transaction, TransactionConfig, CanceledTransaction } from './models';
+=======
+import { canceledTransactions, Transaction, TransactionConfig } from './models';
+>>>>>>> b6d5e4ddefe8cb56c3f231ceae5555ea9365fadc
 @Controller()
 export class AppController {
   constructor(
@@ -10,14 +14,18 @@ export class AppController {
   ) {}
 
   @Post('validate-transaction')
-  async test(
+  async validateTransaction(
     @Body('config') config: TransactionConfig,
     @Body('transaction') transaction: Transaction,
+<<<<<<< HEAD
     @Body('canceledTransactions') canceledTransactions: CanceledTransaction,
+=======
+    @Body('canceledTransactions') canceledTransactions: canceledTransactions,
+>>>>>>> b6d5e4ddefe8cb56c3f231ceae5555ea9365fadc
   ): Promise<any> {
     try {
-      let cuit = `${config.companyIdentificationValue}`;
-      let vatCondition = config.vatCondition;
+      const cuit = `${config.companyIdentificationValue}`;
+      const vatCondition = config.vatCondition;
       if (!transaction.type.codes.length) {
         throw new Error('Códigos AFIP no definidos');
       }
@@ -26,24 +34,24 @@ export class AppController {
         const response = await this.wsaaService.generarTA(cuit);
         console.log(response);
       }
-      let TA = await this.wsaaService.getTA(cuit);
+      const TA = await this.wsaaService.getTA(cuit);
 
-      let doctipo = transaction.company.identificationType.code;
-      let docnumber = transaction.company.identificationValue;
+      const doctipo = transaction.company.identificationType.code;
+      const docnumber = transaction.company.identificationValue;
 
-      let tipcomp = transaction.type.codes.find(
+      const tipcomp = transaction.type.codes.find(
         (item) => item.letter == transaction.letter,
       ).code;
 
-      let ptovta = transaction.origin;
-      let tipocbte = tipcomp;
+      const ptovta = transaction.origin;
+      const tipocbte = tipcomp;
       const date = new Date();
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
-      let cbteFecha = `${year}${month}${day}`;
+      const cbteFecha = `${year}${month}${day}`;
       let baseimp = 0;
-      let impiva = 0;
+      let impIVA = 0;
       let impneto = 0;
       let exempt = 0;
       if (transaction.letter !== 'C') {
@@ -52,13 +60,13 @@ export class AppController {
           for (let i = 0; i < transaction.taxes.length; i++) {
             baseimp = transaction.taxes[i].percentage;
             impneto = impneto + transaction.taxes[i].taxBase;
-            impiva = impiva + transaction.taxes[i].taxAmount;
+            impIVA = impIVA + transaction.taxes[i].taxAmount;
           }
         }
       } else {
         impneto = impneto + transaction.totalPrice;
       }
-      let datosDeUltimoComprobanteAutorizado =
+      const datosDeUltimoComprobanteAutorizado =
         await this.wsfev1Service.buscarUltimoComprobanteAutorizado(
           TA.credentials[0].token[0],
           TA.credentials[0].sign[0],
@@ -66,12 +74,12 @@ export class AppController {
           ptovta,
           tipocbte,
         );
-      let nro = datosDeUltimoComprobanteAutorizado.CbteNro;
+      const nro = datosDeUltimoComprobanteAutorizado.CbteNro;
       if (typeof nro !== 'number') {
         throw new Error('Último comprobante autorizado no es numérico');
       }
-      let nro1 = nro + 1;
-      let regfe = {};
+      const nro1 = nro + 1;
+      const regfe = {};
       regfe['CbteTipo'] = tipocbte;
       regfe['Concepto'] = 1; //Productos: 1 ---- Servicios: 2 ---- Prod y Serv: 3
       regfe['DocTipo'] = doctipo; //80=CUIT -- 96 DNI --- 99 general cons final
@@ -79,7 +87,7 @@ export class AppController {
       regfe['CbteFch'] = cbteFecha; // fecha emision de factura
       regfe['ImpNeto'] = impneto; // Imp Neto
       regfe['ImpTotConc'] = exempt; // no gravado
-      regfe['ImpIVA'] = impiva; // IVA liquidado
+      regfe['ImpIVA'] = impIVA; // IVA liquidado
       regfe['ImpTrib'] = 0; // otros tributos
       regfe['ImpOpEx'] = 0; // operacion exentas
       regfe['ImpTotal'] = transaction['totalPrice']; // total de la factura. ImpNeto + ImpTotConc + ImpIVA + ImpTrib + ImpOpEx
@@ -90,44 +98,44 @@ export class AppController {
       regfe['MonCotiz'] = 1; // Cotizacion moneda. Solo exportacion
 
       // Comprobantes asociados (solo notas de crédito y débito):
-      let regfeasoc = {};
+      const regfeasoc = {};
       regfeasoc['Tipo'] = 91; //91; //tipo 91|5
       regfeasoc['PtoVta'] = 1;
       regfeasoc['Nro'] = 1;
 
       // Detalle de otros tributos
-      let regfetrib = {};
+      const regfetrib = {};
       regfetrib['Id'] = 1;
       regfetrib['Desc'] = '';
       regfetrib['BaseImp'] = 0;
       regfetrib['Alic'] = 0;
       regfetrib['Importe'] = 0;
 
-      let regfeiva = {};
+      const regfeiva = {};
 
       if (baseimp !== 0) {
         regfeiva['Id'] = 5;
         regfeiva['BaseImp'] = impneto;
-        regfeiva['Importe'] = impiva;
+        regfeiva['Importe'] = impIVA;
       } else {
         regfeiva['Id'] = 0;
         regfeiva['BaseImp'] = 0;
         regfeiva['Importe'] = 0;
       }
 
-      let opcional = {
+      const opcional = {
         Id: transaction.optionalAFIP.id,
         Valor: transaction.optionalAFIP.value,
       };
 
-      let canceled = !canceledTransactions
+      const canceled = !canceledTransactions
         ? null
         : {
             Tipo: canceledTransactions.code,
             PtoVta: canceledTransactions.origin,
             Nro: canceledTransactions.number,
           };
-      let caeData = await this.wsfev1Service.solicitarCAE(
+      const caeData = await this.wsfev1Service.solicitarCAE(
         TA.credentials[0].token,
         TA.credentials[0].sign,
         cuit,
@@ -143,10 +151,8 @@ export class AppController {
       );
 
       return {
-        status: 'OK',
-        number: nro1,
-        CAE: caeData.FeDetResp.FECAEDetResponse[0].CAE,
-        CAEExpirationDate: caeData.FeDetResp.FECAEDetResponse[0].CAEFchVto,
+        data: caeData,
+        message: 'Successful',
       };
     } catch (error) {
       console.log(error);

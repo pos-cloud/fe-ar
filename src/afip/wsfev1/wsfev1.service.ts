@@ -38,21 +38,21 @@ export class Wsfev1Service {
     CbteTipo,
   ): Promise<any> {
     try {
-      let client = await this.soapHelper.createClient(
+      const client = await this.soapHelper.createClient(
         this.address,
         this.endpoint,
       );
-      let xml = {
+      const xml = {
         Auth: { Token, Sign, Cuit },
         PtoVta,
         CbteTipo,
       };
-      let aux = await this.soapHelper.callEndpoint(
+      const aux = await this.soapHelper.callEndpoint(
         client,
         'FECompUltimoAutorizado',
         xml,
       );
-      let response: FECompUltimoAutorizado = (
+      const response: FECompUltimoAutorizado = (
         aux as { FECompUltimoAutorizadoResult: unknown }
       ).FECompUltimoAutorizadoResult as FECompUltimoAutorizado;
       return response;
@@ -75,7 +75,7 @@ export class Wsfev1Service {
     canceled
   ): Promise<FECAESolicitar> {
     try {
-      let client = await this.soapHelper.createClient(
+      const client = await this.soapHelper.createClient(
         this.address,
         this.endpoint,
       );
@@ -141,13 +141,14 @@ export class Wsfev1Service {
       if (vatCondition == 6 || regfeiva['Id'] === 0) {
         xml['FeCAEReq']['FeDetReq']['FECAEDetRequest']['Iva'] = null;
       }
-      let aux = await this.soapHelper.callEndpoint(
+      const aux = await this.soapHelper.callEndpoint(
         client,
         'FECAESolicitar',
         xml,
       );
-      let response: FECAESolicitar = (aux as { FECAESolicitarResult: unknown })
-        .FECAESolicitarResult as FECAESolicitar;
+      const response: FECAESolicitar = (
+        aux as { FECAESolicitarResult: unknown }
+      ).FECAESolicitarResult as FECAESolicitar;
       return response;
     } catch (error) {
       throw error;

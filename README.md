@@ -79,8 +79,8 @@ Nest is [MIT licensed](LICENSE).
 
 ```
  <type>: <short summary>
-	  │           │
-    │           └─⫸ Summary in present tense. Not capitalized. No period at the end
+    │        │
+    │        └─⫸ Summary in present tense. Not capitalized. No period at the end
     │
     └─⫸ Commit Type: build|docs|feat|fix|refactor|test
   

@@ -6,12 +6,37 @@ on:
   workflow_dispatch:
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./dist
+
   deploy-donweb:
     runs-on: prod2
+    needs: build
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./dist
 
       - name: Stop and remove existing container
         run: docker rm -f fe-ar || true
@@ -22,7 +47,7 @@ jobs:
       - name: Run Docker container
         run: |
           docker run \
-            -v /home:/home \
+            -v /home/fe-ar/keys:/app/_keys \
             --restart unless-stopped \
             --net host \
             --name fe-ar \

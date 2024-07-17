@@ -79,13 +79,11 @@ interface CanceledTransaction {
   letter: string;
   number: number;
 }
-
 interface FECompUltimoAutorizado {
   CbteNro: number;
   CbteTipo: number;
   PtoVta: number;
 }
-
 interface FECAESolicitar {
   FeCabResp?: {
     Cuit: string;

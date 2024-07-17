@@ -22,5 +22,4 @@ pnpm-debug.log*
 *.sw?
 
 # Keys
-_keys/*
-!_keys/20378228922/**
+_keys/

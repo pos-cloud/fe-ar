@@ -2,19 +2,16 @@
 FROM node:18
 
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# Copy only package.json and package-lock.json
 COPY package*.json ./
 
 # Install app dependencies
-RUN npm install
+RUN npm install --only=production
 
-# Bundle app source
-COPY . .
-
-# Creates a "dist" folder with the production build
-RUN npm run build
+# Copy the build artifacts
+COPY dist ./dist
 
 # Expose the port on which the app will run
 EXPOSE 307
