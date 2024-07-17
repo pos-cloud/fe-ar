@@ -1,0 +1,119 @@
+{
+	"info": {
+		"_postman_id": "f79fbc01-dbde-454a-82b0-b31d9e2a086f",
+		"name": "fe-ar",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2214161",
+		"_collection_link": "https://pos-cloud.postman.co/workspace/pos-cloud~337882e2-6a25-41c4-aca7-3780a3fa4add/collection/2214161-f79fbc01-dbde-454a-82b0-b31d9e2a086f?action=share&source=collection_link&creator=2214161"
+	},
+	"item": [
+		{
+			"name": "generate-cert",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"companyName\": \"1234\",\n  \"companyCUIT\": \"20-12345679-9\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:307/cert",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "307",
+					"path": [
+						"cert"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "download cert",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:307/cert/20378228922/csr",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "307",
+					"path": [
+						"cert",
+						"20378228922",
+						"csr"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "upload-cert",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/Users/francoandroetto/Projects/api-fe/_keys/20378228922/poscloud.crt"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:307/cert/upload-crt/1233314",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "307",
+					"path": [
+						"cert",
+						"upload-crt",
+						"1233314"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "validate transaction",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"config\": {\n    \"companyIdentificationValue\": \"20378228922\",\n    \"vatCondition\": 6,\n    \"database\": \"poscloud\"\n  },\n  \"transaction\": {\n    \"_id\": \"669709aba665fb5bb1351d20\",\n    \"origin\": 2,\n    \"letter\": \"C\",\n    \"exempt\": 1,\n    \"totalPrice\": 1,\n    \"taxes\": [],\n    \"type\": {\n      \"_id\": \"5b60787d68e1d63254c40d0c\",\n      \"electronics\": true,\n      \"transactionMovement\": \"Venta\",\n      \"codes\": [\n        {\n          \"code\": 3,\n          \"_id\": \"60913381472ed839e9a2e126\",\n          \"letter\": \"A\"\n        },\n        {\n          \"code\": 8,\n          \"_id\": \"60913381472ed839e9a2e125\",\n          \"letter\": \"B\"\n        },\n        {\n          \"code\": 13,\n          \"_id\": \"60913381472ed839e9a2e124\",\n          \"letter\": \"C\"\n        },\n        {\n          \"code\": null,\n          \"_id\": \"60913381472ed839e9a2e123\",\n          \"letter\": \"D\"\n        },\n        {\n          \"code\": null,\n          \"_id\": \"60913381472ed839e9a2e122\",\n          \"letter\": \"E\"\n        },\n        {\n          \"code\": null,\n          \"_id\": \"60913381472ed839e9a2e121\",\n          \"letter\": \"M\"\n        },\n        {\n          \"code\": null,\n          \"_id\": \"60913381472ed839e9a2e120\",\n          \"letter\": \"R\"\n        },\n        {\n          \"code\": null,\n          \"_id\": \"60913381472ed839e9a2e11f\",\n          \"letter\": \"T\"\n        }\n      ],\n      \"finishState\": null\n    },\n    \"operationType\": \"U\",\n    \"company\": {\n      \"identificationType\": {\n        \"code\": \"80\"\n      },\n      \"identificationValue\": \"30714960047\"\n    },\n    \"optionalAFIP\": {\n      \"id\": \"2101\",\n      \"value\": \"123\"\n    }\n  },\n  \"canceledTransactions\": {\n    \"typeId\": \"5b60787d68e1d63254c40d0b\",\n    \"code\": 0,\n    \"origin\": 12,\n    \"letter\": \"A\",\n    \"number\": 49\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:307/validate-transaction",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "307",
+					"path": [
+						"validate-transaction"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
