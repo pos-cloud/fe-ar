@@ -71,13 +71,17 @@ interface Transaction {
   };
   optionalAFIP: any;
 }
-
+interface canceledTransactions {
+  code: number;
+  origin: number;
+  letter: string;
+  number: number;
+}
 interface FECompUltimoAutorizado {
   CbteNro: number;
   CbteTipo: number;
   PtoVta: number;
 }
-
 interface FECAESolicitar {
   FeCabResp?: {
     Cuit: string;
@@ -114,6 +118,7 @@ export type {
   LoginCmsReturn,
   Transaction,
   TransactionConfig,
+  canceledTransactions,
   FECompUltimoAutorizado,
   FECAESolicitar,
 };
