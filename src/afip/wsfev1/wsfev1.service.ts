@@ -71,8 +71,8 @@ export class Wsfev1Service {
     regfeasoc,
     regfetrib,
     regfeiva,
-    opcional,
-    canceled
+    Opcional,
+    CbteAsoc,
   ): Promise<FECAESolicitar> {
     try {
       const client = await this.soapHelper.createClient(
@@ -127,15 +127,19 @@ export class Wsfev1Service {
                   Importe: regfeiva['Importe'],
                 },
               },
-              Opcionales: {
-                Opcional: opcional,
-              },
             },
           },
         },
       };
-      if (canceled) {
-        xml.FeCAEReq.FeDetReq.FECAEDetRequest['CbtesAsoc'] = canceled;
+      if (CbteAsoc) {
+        xml.FeCAEReq.FeDetReq.FECAEDetRequest['CbtesAsoc'] = {
+          CbteAsoc,
+        };
+      }
+      if (Opcional) {
+        xml.FeCAEReq.FeDetReq.FECAEDetRequest['Opcionales'] = {
+          Opcional,
+        };
       }
 
       if (vatCondition == 6 || regfeiva['Id'] === 0) {

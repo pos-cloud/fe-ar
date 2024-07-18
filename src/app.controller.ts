@@ -115,10 +115,12 @@ export class AppController {
         regfeiva['Importe'] = 0;
       }
 
-      const opcional = {
-        Id: transaction.optionalAFIP.id,
-        Valor: transaction.optionalAFIP.value,
-      };
+      const opcional = !transaction.optionalAFIP.id
+        ? null
+        : {
+            Id: transaction.optionalAFIP.id,
+            Valor: transaction.optionalAFIP.value,
+          };
 
       const canceled = !canceledTransactions
         ? null
