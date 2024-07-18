@@ -18,12 +18,6 @@ export class Wsfev1Service {
     return path.join(__dirname, folder, file);
   }
 
-  private checkErrors(): void {
-    try {
-    } catch (error) {
-      throw error;
-    }
-  }
   async openTA(): Promise<void> {
     try {
     } catch (error) {
@@ -84,7 +78,7 @@ export class Wsfev1Service {
         // para
         cbte = '1';
       }
-      let xml = {
+      const xml = {
         Auth: { Token, Sign, Cuit },
         FeCAEReq: {
           FeCabReq: {
