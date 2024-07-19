@@ -115,20 +115,21 @@ export class AppController {
         regfeiva['Importe'] = 0;
       }
 
-      const opcional = !transaction.optionalAFIP.id
-        ? null
-        : {
+      const opcional = transaction?.optionalAFIP?.id
+        ? {
             Id: transaction.optionalAFIP.id,
             Valor: transaction.optionalAFIP.value,
-          };
+          }
+        : null;
 
-      const canceled = !canceledTransactions
-        ? null
-        : {
+      const canceled = canceledTransactions
+        ? {
             Tipo: canceledTransactions.code,
             PtoVta: canceledTransactions.origin,
             Nro: canceledTransactions.number,
-          };
+          }
+        : null;
+
       const caeData = await this.wsfev1Service.solicitarCAE(
         TA.credentials[0].token,
         TA.credentials[0].sign,
