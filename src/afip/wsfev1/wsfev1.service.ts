@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import { SoapHelperService } from '../soap-helper/soap-helper.service';
 import { FECompUltimoAutorizado, FECAESolicitar } from '../../models';
@@ -6,12 +7,19 @@ import { FECompUltimoAutorizado, FECAESolicitar } from '../../models';
 @Injectable()
 export class Wsfev1Service {
   private readonly logger = new Logger('Wsfev1Service');
-  private readonly endpoint = 'https://wswhomo.afip.gov.ar/wsfev1/service.asmx';
+  private readonly endpoint: string;
   private readonly TAFilename: string = 'TA.xml';
 
   address: string;
-  constructor(private readonly soapHelper: SoapHelperService) {
-    this.address = this.getFilePath('', 'wsfev1.wsdl');
+  constructor(
+    private configService: ConfigService,
+    private readonly soapHelper: SoapHelperService,
+  ) {
+    this.address = this.getFilePath(
+      '',
+      this.configService.get<string>('SERVICEWSDL'),
+    );
+    this.endpoint = this.configService.get<string>('SERVICEENDPOINT');
   }
 
   private getFilePath(folder: string, file: string): string {

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
@@ -9,19 +10,28 @@ import { TicketDeAcceso, LoginCmsReturn } from '../../models';
 @Injectable()
 export class WsaaService {
   private readonly logger = new Logger('WsaaService');
-  private readonly endpoint =
-    'https://wsaahomo.afip.gov.ar/ws/services/LoginCms';
-  private readonly TAFilename: string = 'TA.xml';
+  private readonly endpoint: string;
+  private readonly cert: string;
+  private readonly privateKey: string;
+  private readonly passPhrase: string;
   private TA: TicketDeAcceso = {};
-  private readonly cert: string = 'poscloud.crt';
+  private readonly TAFilename: string = 'TA.xml';
   private readonly keysFolder: string = '../../../_keys';
-  private readonly PRIVATEKEY: string = 'poscloud.key';
-  private readonly PASSPHRASE: string = '';
   private readonly pathLogs: string = './logs';
 
   address: string;
-  constructor(private readonly soapHelper: SoapHelperService) {
-    this.address = this.getFilePath('', 'wsaa.wsdl');
+  constructor(
+    private readonly soapHelper: SoapHelperService,
+    private configService: ConfigService,
+  ) {
+    this.address = this.getFilePath(
+      '',
+      this.configService.get<string>('AUTHWSDL'),
+    );
+    this.endpoint = this.configService.get<string>('AUTHENDPOINT');
+    this.cert = this.configService.get<string>('CERT');
+    this.privateKey = this.configService.get<string>('PRIVATEKEY');
+    this.passPhrase = this.configService.get<string>('PASSPHRASE');
   }
 
   private formatDate(date) {
@@ -54,7 +64,7 @@ export class WsaaService {
       );
       const privateKeyPath = this.getFilePath(
         `${this.keysFolder}/${cuit}`,
-        this.PRIVATEKEY,
+        this.privateKey,
       );
 
       await this.signWithOpenSSL(
