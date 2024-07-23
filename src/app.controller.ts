@@ -89,12 +89,6 @@ export class AppController {
       regfe['MonId'] = 'PES'; // Id de moneda 'PES'
       regfe['MonCotiz'] = 1; // Cotizacion moneda. Solo exportacion
 
-      // Comprobantes asociados (solo notas de crédito y débito):
-      const regfeasoc = {};
-      regfeasoc['Tipo'] = 91; //91; //tipo 91|5
-      regfeasoc['PtoVta'] = 1;
-      regfeasoc['Nro'] = 1;
-
       // Detalle de otros tributos
       const regfetrib = {};
       regfetrib['Id'] = 1;
@@ -138,7 +132,6 @@ export class AppController {
         nro1,
         ptovta,
         regfe,
-        regfeasoc,
         regfetrib,
         regfeiva,
         opcional,

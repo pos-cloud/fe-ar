@@ -70,7 +70,6 @@ export class Wsfev1Service {
     cbte,
     PtoVta,
     regfe,
-    regfeasoc,
     regfetrib,
     regfeiva,
     Opcional,
