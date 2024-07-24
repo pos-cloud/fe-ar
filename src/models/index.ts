@@ -105,6 +105,12 @@ interface FECAESolicitar {
       Resultado: string;
       CAE: string;
       CAEFchVto: string;
+      Observaciones: {
+        Obs: Array<{
+          Code: number;
+          Msg: string;
+        }>;
+      };
     };
   };
   Events?: {

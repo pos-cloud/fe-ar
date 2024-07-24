@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import { SoapHelperService } from '../soap-helper/soap-helper.service';
 import { FECompUltimoAutorizado, FECAESolicitar } from '../../models';
@@ -12,14 +11,15 @@ export class Wsfev1Service {
 
   address: string;
   constructor(
-    private configService: ConfigService,
     private readonly soapHelper: SoapHelperService,
   ) {
-    this.address = this.getFilePath(
-      '',
-      this.configService.get<string>('SERVICEWSDL'),
-    );
-    this.endpoint = this.configService.get<string>('SERVICEENDPOINT');
+    if (['development', 'local'].includes(process.env.NODE_ENV)) {
+      this.address = this.getFilePath('', 'wsfev1.wsdl');
+      this.endpoint = 'https://wswhomo.afip.gov.ar/wsfev1/service.asmx';
+    } else if (process.env.NODE_ENV == 'production') {
+      this.address = 'https://servicios1.afip.gov.ar/wsfev1/service.asmx?WSDL';
+      this.endpoint = 'https://servicios1.afip.gov.ar/wsfev1/service.asmx';
+    }
   }
 
   private getFilePath(folder: string, file: string): string {
@@ -66,14 +66,8 @@ export class Wsfev1Service {
     Token,
     Sign,
     Cuit,
-    vatCondition,
-    cbte,
-    PtoVta,
-    regfe,
-    regfetrib,
-    regfeiva,
-    Opcional,
-    CbteAsoc,
+    FeCabReq,
+    FECAEDetRequest,
   ): Promise<FECAESolicitar> {
     try {
       const client = await this.soapHelper.createClient(
@@ -81,71 +75,15 @@ export class Wsfev1Service {
         this.endpoint,
       );
 
-      if (cbte == '0') {
-        // para
-        cbte = '1';
-      }
       const xml = {
         Auth: { Token, Sign, Cuit },
         FeCAEReq: {
-          FeCabReq: {
-            CantReg: 1,
-            PtoVta,
-            CbteTipo: regfe['CbteTipo'],
-          },
+          FeCabReq,
           FeDetReq: {
-            FECAEDetRequest: {
-              Concepto: regfe.Concepto,
-              DocTipo: regfe.DocTipo,
-              DocNro: regfe.DocNro,
-              CbteDesde: cbte,
-              CbteHasta: cbte,
-              CbteFch: regfe.CbteFch,
-              ImpNeto: regfe['ImpNeto'],
-              ImpTotConc: regfe['ImpTotConc'],
-              ImpIVA: regfe['ImpIVA'],
-              ImpTrib: regfe['ImpTrib'],
-              ImpOpEx: regfe['ImpOpEx'],
-              ImpTotal: regfe['ImpTotal'],
-              FchServDesde: regfe['FchServDesde'],
-              FchServHasta: regfe['FchServHasta'],
-              FchVtoPago: regfe['FchVtoPago'],
-              MonId: regfe['MonId'],
-              MonCotiz: regfe['MonCotiz'],
-              Tributos: {
-                Tributo: {
-                  Id: regfetrib['Id'],
-                  Desc: regfetrib['Desc'],
-                  BaseImp: regfetrib['BaseImp'],
-                  Alic: regfetrib['Alic'],
-                  Importe: regfetrib['Importe'],
-                },
-              },
-              Iva: {
-                AlicIva: {
-                  Id: regfeiva['Id'],
-                  BaseIm: regfeiva['BaseImp'],
-                  Importe: regfeiva['Importe'],
-                },
-              },
-            },
+            FECAEDetRequest,
           },
         },
       };
-      if (CbteAsoc) {
-        xml.FeCAEReq.FeDetReq.FECAEDetRequest['CbtesAsoc'] = {
-          CbteAsoc,
-        };
-      }
-      if (Opcional) {
-        xml.FeCAEReq.FeDetReq.FECAEDetRequest['Opcionales'] = {
-          Opcional,
-        };
-      }
-
-      if (vatCondition == 6 || regfeiva['Id'] === 0) {
-        xml['FeCAEReq']['FeDetReq']['FECAEDetRequest']['Iva'] = null;
-      }
       const aux = await this.soapHelper.callEndpoint(
         client,
         'FECAESolicitar',

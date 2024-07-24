@@ -24,7 +24,6 @@ export class AppController {
       const expirationTime = await this.wsaaService.getIfNotExpired(cuit);
       if (!expirationTime) {
         const response = await this.wsaaService.generarTA(cuit);
-        console.log(response);
       }
       const TA = await this.wsaaService.getTA(cuit);
 
@@ -109,14 +108,14 @@ export class AppController {
         regfeiva['Importe'] = 0;
       }
 
-      const opcional = transaction?.optionalAFIP?.id
+      const Opcional = transaction?.optionalAFIP?.id
         ? {
             Id: transaction.optionalAFIP.id,
             Valor: transaction.optionalAFIP.value,
           }
         : null;
 
-      const canceled = canceledTransactions
+      const CbteAsoc = canceledTransactions
         ? {
             Tipo: canceledTransactions.code,
             PtoVta: canceledTransactions.origin,
@@ -124,23 +123,84 @@ export class AppController {
           }
         : null;
 
+      let FeCabReq = {
+        CantReg: 1,
+        PtoVta: ptovta,
+        CbteTipo: regfe['CbteTipo'],
+      };
+      let FECAEDetRequest = {
+        Concepto: regfe['Concepto'],
+        DocTipo: regfe['DocTipo'],
+        DocNro: regfe['DocNro'],
+        CbteDesde: nro1,
+        CbteHasta: nro1,
+        CbteFch: regfe['CbteFch'],
+        ImpNeto: regfe['ImpNeto'],
+        ImpTotConc: regfe['ImpTotConc'],
+        ImpIVA: regfe['ImpIVA'],
+        ImpTrib: regfe['ImpTrib'],
+        ImpOpEx: regfe['ImpOpEx'],
+        ImpTotal: regfe['ImpTotal'],
+        FchServDesde: regfe['FchServDesde'],
+        FchServHasta: regfe['FchServHasta'],
+        FchVtoPago: regfe['FchVtoPago'],
+        MonId: regfe['MonId'],
+        MonCotiz: regfe['MonCotiz'],
+        Tributos: {
+          Tributo: {
+            Id: regfetrib['Id'],
+            Desc: regfetrib['Desc'],
+            BaseImp: regfetrib['BaseImp'],
+            Alic: regfetrib['Alic'],
+            Importe: regfetrib['Importe'],
+          },
+        },
+        Iva: {
+          AlicIva: {
+            Id: regfeiva['Id'],
+            BaseIm: regfeiva['BaseImp'],
+            Importe: regfeiva['Importe'],
+          },
+        },
+      };
+      if (CbteAsoc) {
+        FECAEDetRequest['CbtesAsoc'] = {
+          CbteAsoc,
+        };
+      }
+      if (Opcional) {
+        FECAEDetRequest['Opcionales'] = {
+          Opcional,
+        };
+      }
+
+      if (vatCondition == 6 || regfeiva['Id'] === 0) {
+        FECAEDetRequest['Iva'] = null;
+      }
       const caeData = await this.wsfev1Service.solicitarCAE(
         TA.credentials[0].token,
         TA.credentials[0].sign,
         cuit,
-        vatCondition,
-        nro1,
-        ptovta,
-        regfe,
-        regfetrib,
-        regfeiva,
-        opcional,
-        canceled,
+        FeCabReq,
+        FECAEDetRequest,
       );
 
+      const message =
+        caeData.FeDetResp.FECAEDetResponse[0].CAE == ''
+          ? caeData.FeDetResp.FECAEDetResponse[0].Observaciones.Obs.map(
+              (observacion) => `${observacion.Code} - ${observacion.Msg}`,
+            ).join(', ')
+          : 'Successful';
+
       return {
-        data: caeData,
-        message: 'Successful',
+        data: {
+          caeData,
+          number: nro1,
+          CAE: caeData.FeDetResp.FECAEDetResponse[0].CAE,
+          CAEExpirationDate: caeData.FeDetResp.FECAEDetResponse[0].CAEFchVto,
+        },
+
+        message,
       };
     } catch (error) {
       console.log(error);

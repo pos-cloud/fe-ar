@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
@@ -13,7 +12,6 @@ export class WsaaService {
   private readonly endpoint: string;
   private readonly cert: string;
   private readonly privateKey: string;
-  private readonly passPhrase: string;
   private TA: TicketDeAcceso = {};
   private readonly TAFilename: string = 'TA.xml';
   private readonly keysFolder: string = '../../../_keys';
@@ -22,16 +20,16 @@ export class WsaaService {
   address: string;
   constructor(
     private readonly soapHelper: SoapHelperService,
-    private configService: ConfigService,
   ) {
-    this.address = this.getFilePath(
-      '',
-      this.configService.get<string>('AUTHWSDL'),
-    );
-    this.endpoint = this.configService.get<string>('AUTHENDPOINT');
-    this.cert = this.configService.get<string>('CERT');
-    this.privateKey = this.configService.get<string>('PRIVATEKEY');
-    this.passPhrase = this.configService.get<string>('PASSPHRASE');
+    this.cert = 'poscloud.crt';
+    this.privateKey = 'poscloud.key';
+    if (['development', 'local'].includes(process.env.NODE_ENV)) {
+      this.address = this.getFilePath('', 'wsaa.wsdl');
+      this.endpoint = 'https://wsaahomo.afip.gov.ar/ws/services/LoginCms';
+    } else if (process.env.NODE_ENV == 'production') {
+      this.address = 'https://wsaa.afip.gov.ar/ws/services/LoginCms?WSDL';
+      this.endpoint = 'https://wsaa.afip.gov.ar/ws/services/LoginCms';
+    }
   }
 
   private formatDate(date) {
