@@ -17,4 +17,4 @@ COPY dist ./dist
 EXPOSE 307
 
 # Start the server using the production build
-CMD ["npm", "run", "start:prod"]
+CMD ["npm", "run", "start:dev"]
