@@ -1,4 +1,4 @@
-name: Deploy FE-AR
+name: Deploy FE-AR DEV
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
           path: ./dist
 
   deploy-donweb:
-    runs-on: prod2
+    runs-on: dev
     needs: build
 
     steps:
@@ -42,7 +42,7 @@ jobs:
         run: docker rm -f fe-ar || true
 
       - name: Build Docker image
-        run: docker build -t fe-ar -f Dockerfile .
+        run: docker build -t fe-ar -f Dockerfile.dev .
 
       - name: Run Docker container
         run: |
