@@ -31,8 +31,11 @@ export class WsaaService {
       this.endpoint = 'https://wsaa.afip.gov.ar/ws/services/LoginCms';
     }
   }
+  private formatDate(date: Date): string {
+    return moment(date).tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DDTHH:mm:ssZ');
+  }
 
-  private formatDate(date) {
+/*   private formatDate(date) {
     const pad = (number) => (number < 10 ? '0' : '') + number;
 
     const year = date.getFullYear();
@@ -48,7 +51,7 @@ export class WsaaService {
     const offsetMinutes = pad(Math.abs(timezoneOffset) % 60);
 
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMinutes}`;
-  }
+  } */
   private async signTRA(cuit: string): Promise<string> {
     try {
       const inputFilePath = this.getFilePath(`../resources/${cuit}`, 'TRA.xml');
@@ -183,8 +186,8 @@ export class WsaaService {
         version: '1.0',
         header: {
           uniqueId: Math.floor(Date.now() / 1000),
-          generationTime: this.formatDate(new Date(Date.now() - 60000)),
-          expirationTime: this.formatDate(new Date(Date.now() + 60000)),
+          generationTime: this.formatDate(new Date(Date.now() - 6*60*60*1000)),
+          expirationTime: this.formatDate(new Date(Date.now() + 6*60*60*1000)),
         },
       };
       const xml = `<?xml version="1.0" encoding="UTF-8"?>

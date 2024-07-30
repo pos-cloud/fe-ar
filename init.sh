@@ -5,6 +5,7 @@ function error_exit {
   exit 1
 }
 
+read adHocName
 PROJECT_NAME="afip-integration"
 nest new $PROJECT_NAME --skip-git || error_exit "Failed to create NestJS project."
 
