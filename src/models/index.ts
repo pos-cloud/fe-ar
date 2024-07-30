@@ -117,7 +117,13 @@ interface FECAESolicitar {
     Evt: {
       Code: number;
       Msg: string;
-    };
+    }[];
+  };
+  Errors?: {
+    Err: {
+      Code: number;
+      Msg: string;
+    }[];
   };
 }
 

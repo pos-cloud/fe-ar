@@ -92,6 +92,10 @@ export class Wsfev1Service {
       const response: FECAESolicitar = (
         aux as { FECAESolicitarResult: unknown }
       ).FECAESolicitarResult as FECAESolicitar;
+      if(!!response.Errors.Err.length) {
+        let errors = response.Errors.Err.map((error)=> `${error.Code} - ${error.Msg}`).join(", ")
+        throw new Error(errors)
+      }
       return response;
     } catch (error) {
       throw error;

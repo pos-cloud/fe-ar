@@ -152,7 +152,27 @@ export class WsaaService {
       return null;
     }
   }
+
   async getIfNotExpired(cuit: string): Promise<string | boolean> {
+    try {
+      await this.getTA(cuit);
+
+      if (this.TA && this.TA.header && this.TA.header[0].expirationTime) {
+        const expirationTime = this.TA.header[0].expirationTime[0];
+        const formattedExpirationTime = moment.tz(expirationTime, 'YYYY-MM-DDTHH:mm:ssZ', 'America/Argentina/Buenos_Aires');
+        const now = moment.tz('America/Argentina/Buenos_Aires');
+  
+        return now.isBefore(formattedExpirationTime);
+      }
+  
+
+      return false;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+/*   async getIfNotExpired(cuit: string): Promise<string | boolean> {
     try {
       await this.getTA(cuit);
 
@@ -169,7 +189,7 @@ export class WsaaService {
       throw error;
     }
   }
-
+ */
   async generarTA(cuit: string): Promise<Object> {
     try {
       
