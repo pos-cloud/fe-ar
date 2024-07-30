@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
+import * as moment from 'moment-timezone';
 
 import { SoapHelperService } from '../soap-helper/soap-helper.service';
 import { TicketDeAcceso, LoginCmsReturn } from '../../models';
