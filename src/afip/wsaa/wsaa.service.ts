@@ -211,7 +211,7 @@ export class WsaaService {
       await fs.writeFile(filePath, `${xml}`, 'utf8');
       return xml;
     } catch (error) {
-      throw error;
+      throw new Error(`${error.message} + generationTime: ${traJson.header.generationTime}`);
     }
   }
   private async callWSAA(cms: Object, cuit: string): Promise<Object> {
