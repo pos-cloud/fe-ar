@@ -172,10 +172,15 @@ export class WsaaService {
 
   async generarTA(cuit: string): Promise<Object> {
     try {
+      
       const xml = await this.createTRA(cuit);
       const cms = await this.signTRA(cuit);
-      const response = await this.callWSAA(cms, cuit);
-      return response;
+      try {
+        const response = await this.callWSAA(cms, cuit);
+        return response;
+      } catch (error) {
+        throw new Error(`${error} --------- ${xml}`)
+      }
     } catch (error) {
       throw error;
     }
@@ -211,7 +216,7 @@ export class WsaaService {
       await fs.writeFile(filePath, `${xml}`, 'utf8');
       return xml;
     } catch (error) {
-      throw new Error(`${error.message} + generationTime: ${traJson.header.generationTime}`);
+      throw error;
     }
   }
   private async callWSAA(cms: Object, cuit: string): Promise<Object> {
