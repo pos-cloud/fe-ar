@@ -108,7 +108,7 @@ export class AppController {
         regfeiva['Importe'] = 0;
       }
 
-      const Opcional = transaction?.optionalAFIP?.id
+      const Opcional = transaction?.optionalAFIP?.value
         ? {
             Id: transaction.optionalAFIP.id,
             Valor: transaction.optionalAFIP.value,
