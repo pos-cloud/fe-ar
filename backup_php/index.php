@@ -4,9 +4,9 @@ date_default_timezone_set('America/Buenos_Aires');
 include('wsaa.class.php');
 include('wsfev1.class.php');
 
-$OS = "windows"; // linux-windows
+$OS = "linux"; // linux-windows
 $build = "test"; // prod-test
-$pathLinux = '/var/www/html/libs/fe/resources/';
+$pathLinux = '/home/angeloacr/Proyectos/posCloudAr/api-fe/backup_php/resources/';
 $pathWindows = 'C:/PosCloud/xampp/htdocs/libs/fe/resources/';
 $pathLogs;
 $path;
@@ -38,17 +38,16 @@ if($OS == "windows") {
 
 
 */
-if(isset($_POST['config']) || isset($_POST['transaction'])) {
-	$config = json_decode($_POST['config'], true);
+	//$config = json_decode($_POST['config'], true);
 	$transaction = json_decode($_POST['transaction'], true);
-	if(isset($config["database"]) || isset($config["vatCondition"]) || isset($config["companyCUIT"])) {
-		$database = $config["database"];
-		$condVta = $config["vatCondition"];
-		$CUIT = $config["companyCUIT"];
-		$CUIT = explode("-", $CUIT)[0].explode("-", $CUIT)[1].explode("-", $CUIT)[2];
+	//if(isset($config["database"]) || isset($config["vatCondition"]) || isset($config["companyCUIT"])) {
+		$database = "bc";
+		$condVta = 6;
+		$CUIT = 20378228922;
+		//$CUIT = explode("-", $CUIT)[0].explode("-", $CUIT)[1].explode("-", $CUIT)[2];
 		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Se conecta: ".$database."\n", FILE_APPEND | LOCK_EX);
 		$pathLogs = $path.$database."/log.txt";
-	} else {
+/* 	} else {
 		if(empty($err)) {
 			$err =	'{
 						"status":"err",
@@ -58,17 +57,7 @@ if(isset($_POST['config']) || isset($_POST['transaction'])) {
 			echo $err;
 		}
 	}
-} else {
-	if(empty($err)) {
-		$err =	'{
-					"status":"err",
-					"message":"Los parámetros enviados no son válidos",
-				}';
-		file_put_contents("log.txt", date("d/m/Y h:i:s") ." - Err: ". $err."\n", FILE_APPEND | LOCK_EX);
-		echo $err;
-	}
-}
-
+*/
 
 
 // MORE LOGGING

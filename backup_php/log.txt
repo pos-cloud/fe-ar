@@ -1,1 +1,27 @@
 07/08/2018 01:03:29 - Se conecta: bc
+30/07/2024 11:43:56 - Err: {
+					"status":"err",
+					"message":"Los parámetros enviados no son válidos",
+				}
+30/07/2024 11:45:15 - Err: {
+					"status":"err",
+					"message":"Los parámetros enviados no son válidos",
+				}
+30/07/2024 11:46:59 - Err: {
+					"status":"err",
+					"message":"Los parámetros enviados no son válidos",
+				}
+30/07/2024 12:14:30 - Err: {
+					"status":"err",
+					"message":"Los parámetros enviados no son válidos",
+				}
+30/07/2024 12:14:32 - Err: {
+					"status":"err",
+					"message":"Los parámetros enviados no son válidos",
+				}
+30/07/2024 12:14:32 - Err: {
+					"status":"err",
+					"message":"Los parámetros enviados no son válidos",
+				}
+30/07/2024 12:15:40 - Se conecta: bc
+30/07/2024 12:15:42 - Se conecta: bc

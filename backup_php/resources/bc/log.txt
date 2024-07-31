@@ -15,3 +15,9 @@
 			"CAE":"68323664134638",
 			"CAEExpirationDate":"17/08/2018 00:00:00"
 		}
+30/07/2024 12:15:40 - Inicio Transacción
+30/07/2024 12:15:40 - Config: null
+30/07/2024 12:15:40 - Transacción: null
+30/07/2024 12:15:42 - Inicio Transacción
+30/07/2024 12:15:42 - Config: null
+30/07/2024 12:15:42 - Transacción: null
