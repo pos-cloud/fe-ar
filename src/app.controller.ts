@@ -123,12 +123,12 @@ export class AppController {
           }
         : null;
 
-      let FeCabReq = {
+      const FeCabReq = {
         CantReg: 1,
         PtoVta: ptovta,
         CbteTipo: regfe['CbteTipo'],
       };
-      let FECAEDetRequest = {
+      const FECAEDetRequest = {
         Concepto: regfe['Concepto'],
         DocTipo: regfe['DocTipo'],
         DocNro: regfe['DocNro'],
