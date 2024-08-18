@@ -212,19 +212,23 @@ export class WsaaService {
         version: '1.0',
         header: {
           uniqueId: Math.floor(Date.now() / 1000),
-          generationTime: this.formatDate(new Date(Date.now() - 6*60*60*1000)),
-          expirationTime: this.formatDate(new Date(Date.now() + 6*60*60*1000)),
+          generationTime: this.formatDate(
+            moment().subtract(5, 'minutes').toDate(), // 5 minutos antes
+          ),
+          expirationTime: this.formatDate(
+            moment().add(12, 'minutes').toDate(), // 12 minutos después
+          ),
         },
       };
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<loginTicketRequest version="${traJson.version}">
-    <header>
-        <uniqueId>${traJson.header.uniqueId}</uniqueId>
-        <generationTime>${traJson.header.generationTime}</generationTime>
-        <expirationTime>${traJson.header.expirationTime}</expirationTime>
-    </header>
-    <service>wsfe</service>
-</loginTicketRequest>
+          <loginTicketRequest version="${traJson.version}">
+              <header>
+                  <uniqueId>${traJson.header.uniqueId}</uniqueId>
+                  <generationTime>${traJson.header.generationTime}</generationTime>
+                  <expirationTime>${traJson.header.expirationTime}</expirationTime>
+              </header>
+              <service>wsfe</service>
+          </loginTicketRequest>
       `;
       const filePath = this.getFilePath(`../resources/${cuit}`, 'TRA.xml');
       const dirPath = path.dirname(filePath);
@@ -239,6 +243,7 @@ export class WsaaService {
       throw error;
     }
   }
+
   private async callWSAA(cms: Object, cuit: string): Promise<Object> {
     try {
       const client = await this.soapHelper.createClient(
