@@ -181,6 +181,9 @@ export class AppController {
         };
       }
 
+      if (vatCondition == 6) {
+        FECAEDetRequest['Iva'] = null;
+      }
       const caeData = await this.wsfev1Service.solicitarCAE(
         TA.credentials[0].token,
         TA.credentials[0].sign,
