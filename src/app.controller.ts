@@ -23,12 +23,19 @@ export class AppController {
       }
       const expirationTime = await this.wsaaService.getIfNotExpired(cuit);
       if (!expirationTime) {
-        const response = await this.wsaaService.generarTA(cuit);
+        try {
+          await this.wsaaService.generarTA(cuit);
+        } catch (error) {
+          return {
+            status: '',
+            message: error.toString(),
+          };
+        }
       }
       const TA = await this.wsaaService.getTA(cuit);
 
-      const doctipo = transaction.company.identificationType.code;
-      const docnumber = transaction.company.identificationValue;
+      const doctipo = transaction?.company?.identificationType?.code ?? 99;
+      const docnumber = transaction?.company?.identificationValue ?? 0;
 
       const tipcomp = transaction.type.codes.find(
         (item) => item.letter == transaction.letter,
@@ -199,7 +206,6 @@ export class AppController {
           CAE: caeData.FeDetResp.FECAEDetResponse[0].CAE,
           CAEExpirationDate: caeData.FeDetResp.FECAEDetResponse[0].CAEFchVto,
         },
-
         message,
       };
     } catch (error) {

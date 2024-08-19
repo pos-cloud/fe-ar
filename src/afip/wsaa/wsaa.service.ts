@@ -19,9 +19,7 @@ export class WsaaService {
   private readonly pathLogs: string = './logs';
 
   address: string;
-  constructor(
-    private readonly soapHelper: SoapHelperService,
-  ) {
+  constructor(private readonly soapHelper: SoapHelperService) {
     this.cert = 'poscloud.crt';
     this.privateKey = 'poscloud.key';
     if (['development', 'local'].includes(process.env.NODE_ENV)) {
@@ -33,10 +31,12 @@ export class WsaaService {
     }
   }
   private formatDate(date: Date): string {
-    return moment(date).tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DDTHH:mm:ssZ');
+    return moment(date)
+      .tz('America/Argentina/Buenos_Aires')
+      .format('YYYY-MM-DDTHH:mm:ssZ');
   }
 
-/*   private formatDate(date) {
+  /*   private formatDate(date) {
     const pad = (number) => (number < 10 ? '0' : '') + number;
 
     const year = date.getFullYear();
@@ -159,12 +159,15 @@ export class WsaaService {
 
       if (this.TA && this.TA.header && this.TA.header[0].expirationTime) {
         const expirationTime = this.TA.header[0].expirationTime[0];
-        const formattedExpirationTime = moment.tz(expirationTime, 'YYYY-MM-DDTHH:mm:ssZ', 'America/Argentina/Buenos_Aires');
+        const formattedExpirationTime = moment.tz(
+          expirationTime,
+          'YYYY-MM-DDTHH:mm:ssZ',
+          'America/Argentina/Buenos_Aires',
+        );
         const now = moment.tz('America/Argentina/Buenos_Aires');
-  
+
         return now.isBefore(formattedExpirationTime);
       }
-  
 
       return false;
     } catch (error) {
@@ -172,7 +175,7 @@ export class WsaaService {
     }
   }
 
-/*   async getIfNotExpired(cuit: string): Promise<string | boolean> {
+  /*   async getIfNotExpired(cuit: string): Promise<string | boolean> {
     try {
       await this.getTA(cuit);
 
@@ -190,23 +193,22 @@ export class WsaaService {
     }
   }
  */
-  async generarTA(cuit: string): Promise<Object> {
+  async generarTA(cuit: string): Promise<object> {
     try {
-      
       const xml = await this.createTRA(cuit);
       const cms = await this.signTRA(cuit);
       try {
         const response = await this.callWSAA(cms, cuit);
         return response;
       } catch (error) {
-        throw new Error(`${error} --------- ${xml}`)
+        throw new Error(`${error} --------- ${xml}`);
       }
     } catch (error) {
-      throw error;
+      throw new Error(error);
     }
   }
 
-  private async createTRA(cuit: string): Promise<Object> {
+  private async createTRA(cuit: string): Promise<unknown> {
     try {
       const traJson = {
         version: '1.0',
