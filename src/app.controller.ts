@@ -165,7 +165,7 @@ export class AppController {
         Iva: {
           AlicIva: {
             Id: regfeiva['Id'],
-            BaseIm: regfeiva['BaseImp'],
+            BaseImp: regfeiva['BaseImp'],
             Importe: regfeiva['Importe'],
           },
         },
@@ -181,9 +181,6 @@ export class AppController {
         };
       }
 
-      if (vatCondition == 6 || regfeiva['Id'] === 0) {
-        FECAEDetRequest['Iva'] = null;
-      }
       const caeData = await this.wsfev1Service.solicitarCAE(
         TA.credentials[0].token,
         TA.credentials[0].sign,
