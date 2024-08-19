@@ -16,7 +16,7 @@ export class AppController {
     @Body('canceledTransactions') canceledTransactions: CanceledTransaction,
   ): Promise<any> {
     try {
-      const cuit = `${config.companyIdentificationValue}`;
+      const cuit = `${config.companyIdentificationValue}`.replaceAll("-","");
       const vatCondition = config.vatCondition;
       if (!transaction.type.codes.length) {
         throw new Error('Códigos AFIP no definidos');
@@ -35,7 +35,7 @@ export class AppController {
       const TA = await this.wsaaService.getTA(cuit);
 
       const doctipo = transaction?.company?.identificationType?.code ?? 99;
-      const docnumber = transaction?.company?.identificationValue ?? 0;
+      const docnumber = transaction?.company?.identificationValue.replaceAll("-","") ?? 0;
 
       const tipcomp = transaction.type.codes.find(
         (item) => item.letter == transaction.letter,

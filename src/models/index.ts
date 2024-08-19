@@ -19,7 +19,7 @@ interface LoginCmsReturn {
   loginCmsReturn?: string;
 }
 interface TransactionConfig {
-  companyIdentificationValue: number;
+  companyIdentificationValue: string;
   vatCondition: number;
 }
 interface Transaction {
