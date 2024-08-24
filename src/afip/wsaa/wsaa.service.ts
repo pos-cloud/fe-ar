@@ -36,23 +36,6 @@ export class WsaaService {
       .format('YYYY-MM-DDTHH:mm:ssZ');
   }
 
-  /*   private formatDate(date) {
-    const pad = (number) => (number < 10 ? '0' : '') + number;
-
-    const year = date.getFullYear();
-    const month = pad(date.getMonth() + 1);
-    const day = pad(date.getDate());
-    const hours = pad(date.getHours());
-    const minutes = pad(date.getMinutes());
-    const seconds = pad(date.getSeconds());
-
-    const timezoneOffset = -date.getTimezoneOffset();
-    const sign = timezoneOffset >= 0 ? '+' : '-';
-    const offsetHours = pad(Math.floor(Math.abs(timezoneOffset) / 60));
-    const offsetMinutes = pad(Math.abs(timezoneOffset) % 60);
-
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMinutes}`;
-  } */
   private async signTRA(cuit: string): Promise<string> {
     try {
       const inputFilePath = this.getFilePath(`../resources/${cuit}`, 'TRA.xml');
@@ -175,24 +158,6 @@ export class WsaaService {
     }
   }
 
-  /*   async getIfNotExpired(cuit: string): Promise<string | boolean> {
-    try {
-      await this.getTA(cuit);
-
-      if (this.TA && this.TA.header && this.TA.header[0].expirationTime) {
-        const expirationTime = this.TA.header[0].expirationTime[0];
-        const formattedExpirationTime = expirationTime
-          .replace('T', ' ')
-          .substring(0, 19);
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      throw error;
-    }
-  }
- */
   async generarTA(cuit: string): Promise<object> {
     try {
       const xml = await this.createTRA(cuit);
@@ -215,7 +180,7 @@ export class WsaaService {
         header: {
           uniqueId: Math.floor(Date.now() / 1000),
           generationTime: this.formatDate(
-            moment().subtract(5, 'minutes').toDate(), // 5 minutos antes
+            moment().toDate(), // 5 minutos antes
           ),
           expirationTime: this.formatDate(
             moment().add(12, 'minutes').toDate(), // 12 minutos después
