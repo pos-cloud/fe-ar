@@ -48,6 +48,7 @@ jobs:
         run: |
           docker run \
             -v /home/fe-ar/keys:/app/_keys \
+            -v /home/fe-ar/resources:/app/dist/afip/resources \
             --restart unless-stopped \
             --net host \
             --name fe-ar \
