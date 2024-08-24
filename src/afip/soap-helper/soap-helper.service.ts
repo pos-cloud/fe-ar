@@ -41,7 +41,6 @@ export class SoapHelperService {
     });
   }
   async callEndpoint(client, endpoint, data) {
-    console.log(data);
     return new Promise(async (resolve, reject) => {
       client[endpoint](
         data,
