@@ -174,7 +174,7 @@ export class WsaaService {
         header: {
           uniqueId: Math.floor(Date.now() / 1000),
           generationTime: moment().subtract(5, 'minutes').tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DDTHH:mm:ssZ'),
-          expirationTime: moment().subtract(5, 'minutes').tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DDTHH:mm:ssZ'),
+          expirationTime: moment().add(15, 'minutes').tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DDTHH:mm:ssZ'),
         },
       };
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
