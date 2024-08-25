@@ -113,17 +113,15 @@ export class WsaaService {
 
   async getTA(cuit: string): Promise<TicketDeAcceso | null> {
     try {
-      if (!this.TA.credentials) {
-        const TAFilePath = path.join(
-          __dirname,
-          `../resources/${cuit}`,
-          this.TAFilename,
-        );
-        const TAFile = await fs.readFile(TAFilePath, 'utf8');
-        const TAObject = await this.soapHelper.xml2Array(TAFile);
-        this.TA = TAObject.loginTicketResponse;
-      }
-      return this.TA;
+      const TAFilePath = path.join(
+        __dirname,
+        `../resources/${cuit}`,
+        this.TAFilename,
+      );
+      const TAFile = await fs.readFile(TAFilePath, 'utf8');
+      const TAObject = await this.soapHelper.xml2Array(TAFile);
+      const TA = TAObject.loginTicketResponse;
+      return TA;
     } catch (error) {
       this.logger.error(`Error reading TA file: ${error.message}`);
       return null;
@@ -132,10 +130,10 @@ export class WsaaService {
 
   async getIfNotExpired(cuit: string): Promise<string | boolean> {
     try {
-      await this.getTA(cuit);
+      let TA = await this.getTA(cuit);
 
-      if (this.TA && this.TA.header && this.TA.header[0].expirationTime) {
-        const expirationTime = this.TA.header[0].expirationTime[0];
+      if (TA && TA.header && TA.header[0].expirationTime) {
+        const expirationTime = TA.header[0].expirationTime[0];
         const formattedExpirationTime = moment.tz(
           expirationTime,
           'YYYY-MM-DDTHH:mm:ssZ',
@@ -173,8 +171,14 @@ export class WsaaService {
         version: '1.0',
         header: {
           uniqueId: Math.floor(Date.now() / 1000),
-          generationTime: moment().subtract(5, 'minutes').tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DDTHH:mm:ssZ'),
-          expirationTime: moment().add(15, 'minutes').tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DDTHH:mm:ssZ'),
+          generationTime: moment()
+            .subtract(5, 'minutes')
+            .tz('America/Argentina/Buenos_Aires')
+            .format('YYYY-MM-DDTHH:mm:ssZ'),
+          expirationTime: moment()
+            .add(15, 'minutes')
+            .tz('America/Argentina/Buenos_Aires')
+            .format('YYYY-MM-DDTHH:mm:ssZ'),
         },
       };
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
