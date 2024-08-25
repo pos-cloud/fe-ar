@@ -10,9 +10,7 @@ export class Wsfev1Service {
   private readonly TAFilename: string = 'TA.xml';
 
   address: string;
-  constructor(
-    private readonly soapHelper: SoapHelperService,
-  ) {
+  constructor(private readonly soapHelper: SoapHelperService) {
     if (['development', 'local'].includes(process.env.NODE_ENV)) {
       this.address = this.getFilePath('', 'wsfev1.wsdl');
       this.endpoint = 'https://wswhomo.afip.gov.ar/wsfev1/service.asmx';
@@ -92,9 +90,11 @@ export class Wsfev1Service {
       const response: FECAESolicitar = (
         aux as { FECAESolicitarResult: unknown }
       ).FECAESolicitarResult as FECAESolicitar;
-      if(!!response.Errors && !!response.Errors.Err.length) {
-        let errors = response.Errors.Err.map((error)=> `${error.Code} - ${error.Msg}`).join(", ")
-        throw new Error(errors)
+      if (!!response.Errors && !!response.Errors.Err.length) {
+        const errors = response.Errors.Err.map(
+          (error) => `${error.Code} - ${error.Msg}`,
+        ).join(', ');
+        throw new Error(errors);
       }
       return response;
     } catch (error) {

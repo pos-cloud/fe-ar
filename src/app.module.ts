@@ -8,10 +8,13 @@ import { CertModule } from './cert/cert.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [CertModule, ConfigModule.forRoot({
-    isGlobal: true,
-    envFilePath: ['.dev.env', '.env'],
-  })],
+  imports: [
+    CertModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.dev.env', '.env'],
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService, WsaaService, Wsfev1Service, SoapHelperService],
 })
