@@ -47,7 +47,6 @@ export class AppController {
       const day = String(date.getDate()).padStart(2, '0');
       let cbteFecha = `${year}${month}${day}`;
 
-
       if (transaction?.endDate) {
         const endDate = new Date(transaction.endDate);
         const endYear = endDate.getFullYear();
@@ -55,7 +54,6 @@ export class AppController {
         const endDay = String(endDate.getDate()).padStart(2, '0');
         cbteFecha = `${endYear}${endMonth}${endDay}`;
       }
-
 
       let baseimp = 0;
       let impIVA = 0;
@@ -207,7 +205,7 @@ export class AppController {
               observacion => `${observacion.Code} - ${observacion.Msg}`,
             ).join(', ')
           : 'Successful';
-
+      console.log(message);
       return {
         data: {
           caeData,
