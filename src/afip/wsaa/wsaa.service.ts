@@ -33,25 +33,11 @@ export class WsaaService {
   private async signTRA(cuit: string): Promise<string> {
     try {
       const inputFilePath = this.getFilePath(`../resources/${cuit}`, 'TRA.xml');
-      const outputFilePath = this.getFilePath(
-        `../resources/${cuit}`,
-        'TRA.tmp',
-      );
-      const certPath = this.getFilePath(
-        `${this.keysFolder}/${cuit}`,
-        this.cert,
-      );
-      const privateKeyPath = this.getFilePath(
-        `${this.keysFolder}/${cuit}`,
-        this.privateKey,
-      );
+      const outputFilePath = this.getFilePath(`../resources/${cuit}`, 'TRA.tmp');
+      const certPath = this.getFilePath(`${this.keysFolder}/${cuit}`, this.cert);
+      const privateKeyPath = this.getFilePath(`${this.keysFolder}/${cuit}`, this.privateKey);
 
-      await this.signWithOpenSSL(
-        inputFilePath,
-        outputFilePath,
-        certPath,
-        privateKeyPath,
-      );
+      await this.signWithOpenSSL(inputFilePath, outputFilePath, certPath, privateKeyPath);
 
       const CMS = await this.extractSignedContent(outputFilePath);
       await fs.unlink(outputFilePath);
@@ -113,11 +99,7 @@ export class WsaaService {
 
   async getTA(cuit: string): Promise<TicketDeAcceso | null> {
     try {
-      const TAFilePath = path.join(
-        __dirname,
-        `../resources/${cuit}`,
-        this.TAFilename,
-      );
+      const TAFilePath = path.join(__dirname, `../resources/${cuit}`, this.TAFilename);
       const TAFile = await fs.readFile(TAFilePath, 'utf8');
       const TAObject = await this.soapHelper.xml2Array(TAFile);
       const TA = TAObject.loginTicketResponse;
@@ -146,6 +128,7 @@ export class WsaaService {
 
       return false;
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }
@@ -158,9 +141,11 @@ export class WsaaService {
         const response = await this.callWSAA(cms, cuit);
         return response;
       } catch (error) {
-        throw new Error(`${error} --------- ${xml}`);
+        console.log(error);
+        throw new Error(`${verror} --------- ${xml}`);
       }
     } catch (error) {
+      console.log(error);
       throw new Error(error);
     }
   }
@@ -201,25 +186,19 @@ export class WsaaService {
       await fs.writeFile(filePath, `${xml}`, 'utf8');
       return xml;
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }
 
   private async callWSAA(cms: Object, cuit: string): Promise<Object> {
     try {
-      const client = await this.soapHelper.createClient(
-        this.address,
-        this.endpoint,
-      );
+      const client = await this.soapHelper.createClient(this.address, this.endpoint);
 
       const xml = {
         in0: cms,
       };
-      const response: LoginCmsReturn = await this.soapHelper.callEndpoint(
-        client,
-        'loginCms',
-        xml,
-      );
+      const response: LoginCmsReturn = await this.soapHelper.callEndpoint(client, 'loginCms', xml);
       const filePath = this.getFilePath(`../resources/${cuit}`, 'TA.xml');
       const dirPath = path.dirname(filePath);
       try {
@@ -230,6 +209,7 @@ export class WsaaService {
       await fs.writeFile(filePath, `${response.loginCmsReturn}`, 'utf8');
       return response;
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }

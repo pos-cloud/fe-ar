@@ -42,18 +42,17 @@ export class SoapHelperService {
   }
   async callEndpoint(client, endpoint, data) {
     return new Promise(async (resolve, reject) => {
-      client[endpoint](
-        data,
-        async (err, res, rawResponse, soapHeader, rawRequest) => {
-          try {
-            console.log(endpoint, err)
-            if (err) throw err;
-            resolve(res);
-          } catch (e) {
-            reject(e);
-          }
-        },
-      );
+      client[endpoint](data, async (err, res, rawResponse, soapHeader, rawRequest) => {
+        try {
+          console.log(endpoint, err);
+          console.log(rawRequest);
+          console.log(rawResponse);
+          if (err) throw err;
+          resolve(res);
+        } catch (e) {
+          reject(e);
+        }
+      });
     });
   }
 }
