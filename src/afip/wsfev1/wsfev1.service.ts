@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as path from 'path';
+import { FECAESolicitar, FECompUltimoAutorizado } from '../../models';
 import { SoapHelperService } from '../soap-helper/soap-helper.service';
-import { FECompUltimoAutorizado, FECAESolicitar } from '../../models';
 
 @Injectable()
 export class Wsfev1Service {
@@ -30,48 +30,25 @@ export class Wsfev1Service {
       throw error;
     }
   }
-  async buscarUltimoComprobanteAutorizado(
-    Token,
-    Sign,
-    Cuit,
-    PtoVta,
-    CbteTipo,
-  ): Promise<any> {
+  async buscarUltimoComprobanteAutorizado(Token, Sign, Cuit, PtoVta, CbteTipo): Promise<any> {
     try {
-      const client = await this.soapHelper.createClient(
-        this.address,
-        this.endpoint,
-      );
+      const client = await this.soapHelper.createClient(this.address, this.endpoint);
       const xml = {
         Auth: { Token, Sign, Cuit },
         PtoVta,
         CbteTipo,
       };
-      const aux = await this.soapHelper.callEndpoint(
-        client,
-        'FECompUltimoAutorizado',
-        xml,
-      );
-      const response: FECompUltimoAutorizado = (
-        aux as { FECompUltimoAutorizadoResult: unknown }
-      ).FECompUltimoAutorizadoResult as FECompUltimoAutorizado;
+      const aux = await this.soapHelper.callEndpoint(client, 'FECompUltimoAutorizado', xml);
+      const response: FECompUltimoAutorizado = (aux as { FECompUltimoAutorizadoResult: unknown })
+        .FECompUltimoAutorizadoResult as FECompUltimoAutorizado;
       return response;
     } catch (error) {
       throw error;
     }
   }
-  async solicitarCAE(
-    Token,
-    Sign,
-    Cuit,
-    FeCabReq,
-    FECAEDetRequest,
-  ): Promise<FECAESolicitar> {
+  async solicitarCAE(Token, Sign, Cuit, FeCabReq, FECAEDetRequest): Promise<FECAESolicitar> {
     try {
-      const client = await this.soapHelper.createClient(
-        this.address,
-        this.endpoint,
-      );
+      const client = await this.soapHelper.createClient(this.address, this.endpoint);
 
       const xml = {
         Auth: { Token, Sign, Cuit },
@@ -82,18 +59,11 @@ export class Wsfev1Service {
           },
         },
       };
-      const aux = await this.soapHelper.callEndpoint(
-        client,
-        'FECAESolicitar',
-        xml,
-      );
-      const response: FECAESolicitar = (
-        aux as { FECAESolicitarResult: unknown }
-      ).FECAESolicitarResult as FECAESolicitar;
+      const aux = await this.soapHelper.callEndpoint(client, 'FECAESolicitar', xml);
+      const response: FECAESolicitar = (aux as { FECAESolicitarResult: unknown })
+        .FECAESolicitarResult as FECAESolicitar;
       if (!!response.Errors && !!response.Errors.Err.length) {
-        const errors = response.Errors.Err.map(
-          (error) => `${error.Code} - ${error.Msg}`,
-        ).join(', ');
+        const errors = response.Errors.Err.map(error => `${error.Code} - ${error.Msg}`).join(', ');
         throw new Error(errors);
       }
       return response;
