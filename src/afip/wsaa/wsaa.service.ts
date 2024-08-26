@@ -142,7 +142,7 @@ export class WsaaService {
         return response;
       } catch (error) {
         console.log(error);
-        throw new Error(`${verror} --------- ${xml}`);
+        throw new Error(`${error} --------- ${xml}`);
       }
     } catch (error) {
       console.log(error);
