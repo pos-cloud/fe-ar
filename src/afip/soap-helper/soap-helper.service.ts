@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import * as xml2js from 'xml2js';
 import * as soap from 'soap';
+import * as xml2js from 'xml2js';
 @Injectable()
 export class SoapHelperService {
   parser = xml2js.Parser();
@@ -42,14 +42,12 @@ export class SoapHelperService {
   }
   async callEndpoint(client, endpoint, data) {
     return new Promise(async (resolve, reject) => {
-      client[endpoint](data, async (err, res, rawResponse, soapHeader, rawRequest) => {
+      client[endpoint](data, async (err, res) => {
         try {
-          console.log(endpoint, err);
-          console.log(rawRequest);
-          console.log(rawResponse);
           if (err) throw err;
           resolve(res);
         } catch (e) {
+          console.log(JSON.stringify(e));
           reject(e);
         }
       });

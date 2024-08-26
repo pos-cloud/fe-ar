@@ -205,6 +205,10 @@ export class AppController {
               observacion => `${observacion.Code} - ${observacion.Msg}`,
             ).join(', ')
           : 'Successful';
+
+      console.log('CUIT:', cuit);
+      console.log('Body:', JSON.stringify(FeCabReq));
+      console.log('Body2:', JSON.stringify(FECAEDetRequest));
       console.log(message);
       return {
         data: {
