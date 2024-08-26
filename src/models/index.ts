@@ -27,6 +27,7 @@ interface Transaction {
   letter: string;
   exempt: number;
   totalPrice: number;
+  endDate: string;
   taxes: [
     {
       percentage: number;
@@ -128,11 +129,11 @@ interface FECAESolicitar {
 }
 
 export type {
-  TicketDeAcceso,
+  CanceledTransaction,
+  FECAESolicitar,
+  FECompUltimoAutorizado,
   LoginCmsReturn,
+  TicketDeAcceso,
   Transaction,
   TransactionConfig,
-  CanceledTransaction,
-  FECompUltimoAutorizado,
-  FECAESolicitar,
 };

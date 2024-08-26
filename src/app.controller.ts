@@ -1,7 +1,7 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { WsaaService } from './afip/wsaa/wsaa.service';
 import { Wsfev1Service } from './afip/wsfev1/wsfev1.service';
-import { Transaction, TransactionConfig, CanceledTransaction } from './models';
+import { CanceledTransaction, Transaction, TransactionConfig } from './models';
 @Controller()
 export class AppController {
   constructor(
@@ -16,7 +16,7 @@ export class AppController {
     @Body('canceledTransactions') canceledTransactions: CanceledTransaction,
   ): Promise<any> {
     try {
-      const cuit = `${config.companyIdentificationValue}`.replaceAll("-","");
+      const cuit = `${config.companyIdentificationValue}`.replaceAll('-', '');
       const vatCondition = config.vatCondition;
       if (!transaction.type.codes.length) {
         throw new Error('Códigos AFIP no definidos');
@@ -35,11 +35,9 @@ export class AppController {
       const TA = await this.wsaaService.getTA(cuit);
 
       const doctipo = transaction?.company?.identificationType?.code ?? 99;
-      const docnumber = transaction?.company?.identificationValue.replaceAll("-","") ?? 0;
+      const docnumber = transaction?.company?.identificationValue.replaceAll('-', '') ?? 0;
 
-      const tipcomp = transaction.type.codes.find(
-        (item) => item.letter == transaction.letter,
-      ).code;
+      const tipcomp = transaction.type.codes.find(item => item.letter == transaction.letter).code;
 
       const ptovta = transaction.origin;
       const tipocbte = tipcomp;
@@ -47,7 +45,20 @@ export class AppController {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
-      const cbteFecha = `${year}${month}${day}`;
+      let cbteFecha = `${year}${month}${day}`;
+
+      console.log(transaction);
+
+      if (transaction?.endDate) {
+        const endDate = new Date(transaction.endDate);
+        const endYear = endDate.getFullYear();
+        const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
+        const endDay = String(endDate.getDate()).padStart(2, '0');
+        cbteFecha = `${endYear}${endMonth}${endDay}`;
+      }
+
+      console.log(cbteFecha);
+
       let baseimp = 0;
       let impIVA = 0;
       let impneto = 0;
@@ -195,7 +206,7 @@ export class AppController {
       const message =
         caeData.FeDetResp.FECAEDetResponse[0].CAE == ''
           ? caeData.FeDetResp.FECAEDetResponse[0].Observaciones.Obs.map(
-              (observacion) => `${observacion.Code} - ${observacion.Msg}`,
+              observacion => `${observacion.Code} - ${observacion.Msg}`,
             ).join(', ')
           : 'Successful';
 
