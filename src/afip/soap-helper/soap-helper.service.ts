@@ -46,6 +46,7 @@ export class SoapHelperService {
         data,
         async (err, res, rawResponse, soapHeader, rawRequest) => {
           try {
+            console.log(endpoint, err)
             if (err) throw err;
             resolve(res);
           } catch (e) {
