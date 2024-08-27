@@ -34,7 +34,7 @@ export class AppController {
       }
       const TA = await this.wsaaService.getTA(cuit);
 
-      const doctipo = transaction?.company?.identificationType?.code ?? 99;
+      const doctipo = transaction?.company?.identificationType?.code ?? 96;
       const docnumber = transaction?.company?.identificationValue.replaceAll('-', '') ?? 0;
 
       const tipcomp = transaction.type.codes.find(item => item.letter == transaction.letter).code;
