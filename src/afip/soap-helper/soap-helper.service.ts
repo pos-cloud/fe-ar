@@ -47,7 +47,7 @@ export class SoapHelperService {
           if (err) throw err;
           resolve(res);
         } catch (e) {
-          console.log(JSON.stringify(e));
+          console.log(e);
           reject(e);
         }
       });
