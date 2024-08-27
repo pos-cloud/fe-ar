@@ -55,21 +55,27 @@ export class AppController {
         cbteFecha = `${endYear}${endMonth}${endDay}`;
       }
 
-      let baseimp = 0;
+      const baseimp = 0;
       let impIVA = 0;
       let impneto = 0;
       let exempt = 0;
+      const aliCuotaIVA = [];
+
       if (transaction.letter !== 'C') {
         exempt = transaction.exempt;
         if (transaction.taxes.length > 0) {
           for (let i = 0; i < transaction.taxes.length; i++) {
-            baseimp = transaction.taxes[i].percentage;
-            impneto = impneto + transaction.taxes[i].taxBase;
-            impIVA = impIVA + transaction.taxes[i].taxAmount;
+            aliCuotaIVA.push({
+              Id: transaction.taxes[i].tax.code, // Asigna el ID correcto
+              BaseImp: transaction.taxes[i].taxBase, // Base imponible
+              Importe: transaction.taxes[i].taxAmount, // Importe de IVA
+            });
+            impneto += transaction.taxes[i].taxBase;
+            impIVA += transaction.taxes[i].taxAmount;
           }
         }
       } else {
-        impneto = impneto + transaction.totalPrice;
+        impneto = transaction.totalPrice;
       }
       const datosDeUltimoComprobanteAutorizado =
         await this.wsfev1Service.buscarUltimoComprobanteAutorizado(
@@ -101,7 +107,6 @@ export class AppController {
       regfe['FchVtoPago'] = null; // solo concepto 2 o 3
       regfe['MonId'] = 'PES'; // Id de moneda 'PES'
       regfe['MonCotiz'] = 1; // Cotizacion moneda. Solo exportacion
-
       // Detalle de otros tributos
       const regfetrib = {};
       regfetrib['Id'] = 1;
@@ -170,11 +175,7 @@ export class AppController {
           },
         },
         Iva: {
-          AlicIva: {
-            Id: regfeiva['Id'],
-            BaseImp: regfeiva['BaseImp'],
-            Importe: regfeiva['Importe'],
-          },
+          AlicIva: aliCuotaIVA.length > 0 ? aliCuotaIVA : null,
         },
       };
       if (CbteAsoc) {
