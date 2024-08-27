@@ -2,7 +2,7 @@ name: Deploy FE-AR DEV
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
   workflow_dispatch:
 
 jobs:
