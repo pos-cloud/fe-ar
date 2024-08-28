@@ -103,7 +103,7 @@ export class AppController {
       regfe['DocTipo'] = doctipo; //80=CUIT -- 96 DNI --- 99 general cons final
       regfe['DocNro'] = docnumber; //0 para consumidor final / importe menor a 1000
       regfe['CbteFch'] = cbteFecha; // fecha emision de factura
-      regfe['ImpNeto'] = impneto; // Imp Neto
+      regfe['ImpNeto'] = Math.floor(impneto * 100) / 100; // Imp Neto
       regfe['ImpTotConc'] = exempt; // no gravado
       regfe['ImpIVA'] = impIVA; // IVA liquidado
       regfe['ImpTrib'] = 0; // otros tributos
