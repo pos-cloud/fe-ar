@@ -65,23 +65,24 @@ export class AppController {
       let impIVA = 0;
       let impneto = 0;
       let exempt = 0;
+      const impTotal = Math.floor(transaction.totalPrice * 100) / 100;
       const aliCuotaIVA = [];
 
       if (transaction.letter !== 'C') {
-        exempt = transaction.exempt;
+        exempt = Math.floor(transaction.exempt * 100) / 100;
         if (transaction.taxes.length > 0) {
           for (let i = 0; i < transaction.taxes.length; i++) {
             aliCuotaIVA.push({
               Id: transaction.taxes[i].tax.code, // Asigna el ID correcto
-              BaseImp: transaction.taxes[i].taxBase, // Base imponible
-              Importe: transaction.taxes[i].taxAmount, // Importe de IVA
+              BaseImp: Math.floor(transaction.taxes[i].taxBase * 100) / 100, // Base imponible
+              Importe: Math.floor(transaction.taxes[i].taxAmount * 100) / 100, // Importe de IVA
             });
-            impneto += transaction.taxes[i].taxBase;
-            impIVA += transaction.taxes[i].taxAmount;
+            impneto += Math.floor(transaction.taxes[i].taxBase * 100) / 100;
+            impIVA += Math.floor(transaction.taxes[i].taxAmount * 100) / 100;
           }
         }
       } else {
-        impneto = transaction.totalPrice;
+        impneto = Math.floor(transaction.totalPrice * 100) / 100;
       }
       const datosDeUltimoComprobanteAutorizado =
         await this.wsfev1Service.buscarUltimoComprobanteAutorizado(
@@ -107,7 +108,7 @@ export class AppController {
       regfe['ImpIVA'] = impIVA; // IVA liquidado
       regfe['ImpTrib'] = 0; // otros tributos
       regfe['ImpOpEx'] = 0; // operacion exentas
-      regfe['ImpTotal'] = transaction['totalPrice']; // total de la factura. ImpNeto + ImpTotConc + ImpIVA + ImpTrib + ImpOpEx
+      regfe['ImpTotal'] = impTotal; // total de la factura. ImpNeto + ImpTotConc + ImpIVA + ImpTrib + ImpOpEx
       regfe['FchServDesde'] = null; // solo concepto 2 o 3
       regfe['FchServHasta'] = null; // solo concepto 2 o 3
       regfe['FchVtoPago'] = null; // solo concepto 2 o 3
