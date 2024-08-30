@@ -41,7 +41,7 @@ export class AppController {
       const TA = await this.wsaaService.getTA(cuit);
 
       const doctipo = transaction?.company?.identificationType?.code ?? 96;
-      const docnumber = transaction?.company?.identificationValue.replaceAll('-', '') ?? 0;
+      const docnumber = transaction?.company?.identificationValue?.replaceAll('-', '') ?? 0;
 
       const tipcomp = transaction.type.codes.find(item => item.letter == transaction.letter).code;
 
@@ -105,7 +105,7 @@ export class AppController {
       regfe['CbteFch'] = cbteFecha; // fecha emision de factura
       regfe['ImpNeto'] = Math.floor(impneto * 100) / 100; // Imp Neto
       regfe['ImpTotConc'] = exempt; // no gravado
-      regfe['ImpIVA'] = Math.floor(impIVA  * 100) / 100; // IVA liquidado
+      regfe['ImpIVA'] = Math.floor(impIVA * 100) / 100; // IVA liquidado
       regfe['ImpTrib'] = 0; // otros tributos
       regfe['ImpOpEx'] = 0; // operacion exentas
       regfe['ImpTotal'] = impTotal; // total de la factura. ImpNeto + ImpTotConc + ImpIVA + ImpTrib + ImpOpEx
@@ -127,7 +127,7 @@ export class AppController {
       if (baseimp !== 0) {
         regfeiva['Id'] = 5;
         regfeiva['BaseImp'] = impneto;
-        regfeiva['Importe'] = Math.floor(impIVA  * 100) / 100;
+        regfeiva['Importe'] = Math.floor(impIVA * 100) / 100;
       } else {
         regfeiva['Id'] = 0;
         regfeiva['BaseImp'] = 0;
