@@ -1,60 +1,41 @@
 import {
-  Controller,
-  Post,
+  BadRequestException,
   Body,
-  Res,
-  Get,
+  Controller,
   Param,
-  UseInterceptors,
+  Post,
+  Res,
   UploadedFile,
-  HttpException,
-  HttpStatus,
-  Req,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
+import { promises as fs } from 'fs';
+import { diskStorage } from 'multer';
+import { join } from 'path';
+import { Stream } from 'stream';
 import { CertService } from './cert.service';
 import { CreateCertDto } from './create-cert.dto';
-import { Response } from 'express';
-import * as fs from 'fs';
-import * as path from 'path';
-import { extname } from 'path';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+
 @Controller('cert')
 export class CertController {
   constructor(private readonly certService: CertService) {}
 
   @Post()
-  async generateCert(
-    @Body() createCertDto: CreateCertDto,
-    @Res() res: Response,
-  ) {
+  async generateCert(@Body() createCertDto: CreateCertDto, @Res() res: Response) {
     try {
-      const result = await this.certService.generateCert(createCertDto);
-      return res.status(200).json(result);
-    } catch (error) {
-      return res
-        .status(500)
-        .send(`Error al generar el certificado: ${error.message}`);
-    }
-  }
+      const fileStream: Stream = await this.certService.generateCert(createCertDto);
 
-  @Get(':companyCUIT/csr')
-  async downloadCSR(
-    @Param('companyCUIT') companyCUIT: string,
-    @Res() res: Response,
-  ) {
-    try {
-      const basePath = path.resolve(__dirname, `../../_keys`);
-      const csrFilePath = path.join(basePath, `${companyCUIT}/poscloud.csr`);
-      if (fs.existsSync(csrFilePath)) {
-        res.download(csrFilePath, 'poscloud.csr');
-      } else {
-        res.status(404).send('Archivo .csr no encontrado');
-      }
+      // Configura la respuesta para la descarga del archivo
+      res.set({
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': `attachment; filename="poscloud.csr"`,
+      });
+
+      // Envía el archivo a través del stream
+      fileStream.pipe(res);
     } catch (error) {
-      res
-        .status(500)
-        .send(`Error al descargar el archivo .csr: ${error.message}`);
+      return res.status(500).send(`Error al generar el certificado: ${error.message}`);
     }
   }
 
@@ -62,46 +43,36 @@ export class CertController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: (req, file, callback) => {
-          const { companyCUIT } = req.params;
-          const uploadPath = `./_keys/${companyCUIT}/`;
-          callback(null, uploadPath);
+        destination: (req, file, cb) => {
+          // Obtén el companyCUIT de los parámetros de la URL
+          const companyCUIT = req.params.companyCUIT.replace(/-/g, '');
+          const dir = join('_keys', companyCUIT);
+          cb(null, dir); // Establece el directorio destino
         },
-        filename: (req, file, callback) => {
-          const ext = extname(file.originalname);
-          const filename = `poscloud${ext}`;
-          callback(null, filename);
+        filename: (req, file, cb) => {
+          // Usa el nombre fijo 'poscloud.crt' para el archivo
+          cb(null, 'poscloud.crt');
         },
       }),
-      fileFilter: (req, file, callback) => {
-        if (
-          file.mimetype !== 'application/x-x509-ca-cert' &&
-          file.mimetype !== 'application/pkix-cert'
-        ) {
-          return callback(
-            new HttpException(
-              'Only .crt files are allowed!',
-              HttpStatus.BAD_REQUEST,
-            ),
-            false,
-          );
-        }
-        callback(null, true);
-      },
     }),
   )
-  async uploadCrt(
+  async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Body('companyCUIT') companyCUIT: string,
-    @Req() req: Request,
+    @Param('companyCUIT') companyCUIT: string,
     @Res() res: Response,
   ) {
     if (!file) {
-      throw new HttpException('No file uploaded!', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Por favor, seleccione un archivo .crt');
     }
 
-    return res.status(201).json({
-      message: 'Archivo subido exitosamente!',
-    });
+    const targetDir = join('_keys', companyCUIT).replace(/-/g, '');
+
+    try {
+      await fs.mkdir(targetDir, { recursive: true });
+
+      return res.status(201).json({ message: 'Certificado subido.' });
+    } catch (error) {
+      return res.status(500).json({ error: 'Error while processing file' });
+    }
   }
 }

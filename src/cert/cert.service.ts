@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { exec } from 'child_process';
+import { createReadStream } from 'fs';
 import * as mkdirp from 'mkdirp';
+import { join } from 'path';
+import { Stream } from 'stream';
 import { CreateCertDto } from './create-cert.dto';
-
 @Injectable()
 export class CertService {
-  async generateCert(
-    createCertDto: CreateCertDto,
-  ): Promise<{ message: string }> {
+  async generateCert(createCertDto: CreateCertDto): Promise<Stream> {
     try {
       const { companyName, companyCUIT } = createCertDto;
 
@@ -24,7 +24,11 @@ export class CertService {
       await this.executeCommand(`
         openssl req -new -key ${databasePath}/${sanitizedCUIT}/poscloud.key -subj "${subj}" -out ${databasePath}/${sanitizedCUIT}/poscloud.csr`);
 
-      return { message: 'Generado Correctamente!' };
+      // Ruta al archivo CSR generado
+      const csrPath = join(databasePath, sanitizedCUIT, 'poscloud.csr');
+
+      // Retorna un stream de lectura del archivo generado
+      return createReadStream(csrPath);
     } catch (error) {
       throw new Error(`Error al generar el certificado: ${error.message}`);
     }
@@ -32,7 +36,7 @@ export class CertService {
 
   private executeCommand(command: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      exec(command, (err) => {
+      exec(command, err => {
         if (err) {
           reject(err);
         } else {
