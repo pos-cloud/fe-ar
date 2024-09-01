@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import moment from 'moment-timezone';
+import * as moment from 'moment-timezone';
 import { WsaaService } from './afip/wsaa/wsaa.service';
 import { Wsfev1Service } from './afip/wsfev1/wsfev1.service';
 import { CanceledTransaction, Transaction, TransactionConfig } from './models';
