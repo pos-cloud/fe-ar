@@ -1,4 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import moment from 'moment-timezone';
 import { WsaaService } from './afip/wsaa/wsaa.service';
 import { Wsfev1Service } from './afip/wsfev1/wsfev1.service';
 import { CanceledTransaction, Transaction, TransactionConfig } from './models';
@@ -48,18 +49,13 @@ export class AppController {
 
       const ptovta = transaction.origin;
       const tipocbte = tipcomp;
-      const date = new Date();
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      let cbteFecha = `${year}${month}${day}`;
+
+      // Obtener la fecha actual en la zona horaria de Argentina
+      let cbteFecha = moment.tz('America/Argentina/Buenos_Aires').format('YYYYMMDD');
 
       if (transaction?.endDate) {
-        const endDate = new Date(transaction.endDate);
-        const endYear = endDate.getFullYear();
-        const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
-        const endDay = String(endDate.getDate()).padStart(2, '0');
-        cbteFecha = `${endYear}${endMonth}${endDay}`;
+        const endDate = moment.tz(transaction.endDate, 'America/Argentina/Buenos_Aires');
+        cbteFecha = endDate.format('YYYYMMDD');
       }
 
       const baseimp = 0;

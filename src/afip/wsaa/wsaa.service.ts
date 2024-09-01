@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 import { spawnSync } from 'child_process';
+import * as fs from 'fs/promises';
 import * as moment from 'moment-timezone';
+import * as path from 'path';
 
+import { LoginCmsReturn, TicketDeAcceso } from '../../models';
 import { SoapHelperService } from '../soap-helper/soap-helper.service';
-import { TicketDeAcceso, LoginCmsReturn } from '../../models';
 
 @Injectable()
 export class WsaaService {
@@ -112,7 +112,7 @@ export class WsaaService {
 
   async getIfNotExpired(cuit: string): Promise<string | boolean> {
     try {
-      let TA = await this.getTA(cuit);
+      const TA = await this.getTA(cuit);
 
       if (TA && TA.header && TA.header[0].expirationTime) {
         const expirationTime = TA.header[0].expirationTime[0];
