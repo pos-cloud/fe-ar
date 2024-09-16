@@ -188,11 +188,15 @@ export class AppController {
       };
 
       if (CbteAsoc && CbteAsoc.length > 0) {
-        FECAEDetRequest['CbtesAsoc'] = CbteAsoc; // Directamente es un array, no hace falta envolverlo más
+        FECAEDetRequest['CbtesAsoc'] = {
+          CbteAsoc: CbteAsoc, // Aquí se usa la clave CbteAsoc para definir el array de comprobantes asociados
+        };
       }
 
       if (Opcional && Opcional.length > 0) {
-        FECAEDetRequest['Opcionales'] = Opcional;
+        FECAEDetRequest['Opcionales'] = {
+          Optional: Opcional,
+        };
       }
 
       if (vatCondition == 6) {
