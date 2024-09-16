@@ -183,7 +183,9 @@ export class AppController {
         },
       };
       if (CbteAsoc) {
-        FECAEDetRequest['CbtesAsoc'] = [CbteAsoc];
+        FECAEDetRequest['CbtesAsoc'] = {
+          CbteAsoc,
+        };
       }
       if (Opcional) {
         FECAEDetRequest['Opcionales'] = {
