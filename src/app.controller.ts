@@ -196,6 +196,13 @@ export class AppController {
       if (vatCondition == 6) {
         FECAEDetRequest['Iva'] = null;
       }
+
+      console.log('---AFIP---');
+      console.log('CUIT:', cuit);
+      console.log('Body:', JSON.stringify(FeCabReq));
+      console.log('Body2:', JSON.stringify(FECAEDetRequest));
+      console.log('---AFIP---');
+
       const caeData = await this.wsfev1Service.solicitarCAE(
         TA.credentials[0].token,
         TA.credentials[0].sign,
@@ -210,12 +217,6 @@ export class AppController {
               observacion => `${observacion.Code} - ${observacion.Msg}`,
             ).join(', ')
           : 'Successful';
-
-      console.log('---AFIP---');
-      console.log('CUIT:', cuit);
-      console.log('Body:', JSON.stringify(FeCabReq));
-      console.log('Body2:', JSON.stringify(FECAEDetRequest));
-      console.log('---AFIP---');
 
       return {
         data: {
