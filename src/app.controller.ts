@@ -185,16 +185,13 @@ export class AppController {
         Iva: {
           AlicIva: aliCuotaIVA.length > 0 ? aliCuotaIVA : null,
         },
-        CbtesAsoc: {
-          CbteAsoc: CbteAsoc.length > 0 ? CbteAsoc : null,
-        },
       };
 
-      // if (CbteAsoc && CbteAsoc.length > 0) {
-      //   FECAEDetRequest['CbtesAsoc'] = {
-      //     CbteAsoc: CbteAsoc, // Aquí se usa la clave CbteAsoc para definir el array de comprobantes asociados
-      //   };
-      // }
+      if (CbteAsoc && CbteAsoc.length > 0) {
+        FECAEDetRequest['CbtesAsoc'] = {
+          CbteAsoc: CbteAsoc,
+        };
+      }
 
       if (Opcional && Opcional.length > 0) {
         FECAEDetRequest['Opcionales'] = {
