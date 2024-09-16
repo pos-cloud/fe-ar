@@ -140,15 +140,15 @@ export class AppController {
           ]
         : null;
 
-      const CbteAsoc = canceledTransactions
-        ? [
-            {
-              Tipo: canceledTransactions.code,
-              PtoVta: canceledTransactions.origin,
-              Nro: canceledTransactions.number,
-            },
-          ]
-        : null;
+      const CbteAsoc = [];
+
+      if (canceledTransactions) {
+        CbteAsoc.push({
+          Tipo: canceledTransactions.code,
+          PtoVta: canceledTransactions.origin,
+          Nro: canceledTransactions.number,
+        });
+      }
 
       const FeCabReq = {
         CantReg: 1,
@@ -185,13 +185,16 @@ export class AppController {
         Iva: {
           AlicIva: aliCuotaIVA.length > 0 ? aliCuotaIVA : null,
         },
+        CbtesAsoc: {
+          CbteAsoc: CbteAsoc.length > 0 ? CbteAsoc : null,
+        },
       };
 
-      if (CbteAsoc && CbteAsoc.length > 0) {
-        FECAEDetRequest['CbtesAsoc'] = {
-          CbteAsoc: CbteAsoc, // Aquí se usa la clave CbteAsoc para definir el array de comprobantes asociados
-        };
-      }
+      // if (CbteAsoc && CbteAsoc.length > 0) {
+      //   FECAEDetRequest['CbtesAsoc'] = {
+      //     CbteAsoc: CbteAsoc, // Aquí se usa la clave CbteAsoc para definir el array de comprobantes asociados
+      //   };
+      // }
 
       if (Opcional && Opcional.length > 0) {
         FECAEDetRequest['Opcionales'] = {
