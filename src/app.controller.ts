@@ -18,11 +18,11 @@ export class AppController {
     @Body('canceledTransactions') canceledTransactions: CanceledTransaction,
   ): Promise<any> {
     try {
-      // console.log('---REQUEST---');
-      // console.log('config', config);
-      // console.log('transaction', transaction);
-      // console.log('canceledTransactions', canceledTransactions);
-      // console.log('---REQUEST---');
+      console.log('---REQUEST---');
+      console.log('config', config);
+      console.log('transaction', transaction);
+      console.log('canceledTransactions', canceledTransactions);
+      console.log('---REQUEST---');
 
       const cuit = `${config.companyIdentificationValue}`.replaceAll('-', '');
       const vatCondition = config.vatCondition;
@@ -211,11 +211,11 @@ export class AppController {
             ).join(', ')
           : 'Successful';
 
-      // console.log('---AFIP---');
-      // console.log('CUIT:', cuit);
-      // console.log('Body:', JSON.stringify(FeCabReq));
-      // console.log('Body2:', JSON.stringify(FECAEDetRequest));
-      // console.log('---AFIP---');
+      console.log('---AFIP---');
+      console.log('CUIT:', cuit);
+      console.log('Body:', JSON.stringify(FeCabReq));
+      console.log('Body2:', JSON.stringify(FECAEDetRequest));
+      console.log('---AFIP---');
 
       return {
         data: {
