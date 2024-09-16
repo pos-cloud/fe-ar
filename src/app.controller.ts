@@ -187,15 +187,12 @@ export class AppController {
         },
       };
 
-      if (CbteAsoc) {
-        FECAEDetRequest['CbtesAsoc'] = {
-          CbteAsoc: [CbteAsoc],
-        };
+      if (CbteAsoc && CbteAsoc.length > 0) {
+        FECAEDetRequest['CbtesAsoc'] = CbteAsoc; // Directamente es un array, no hace falta envolverlo más
       }
-      if (Opcional) {
-        FECAEDetRequest['Opcionales'] = {
-          Opcional: [Opcional],
-        };
+
+      if (Opcional && Opcional.length > 0) {
+        FECAEDetRequest['Opcionales'] = Opcional;
       }
 
       if (vatCondition == 6) {
