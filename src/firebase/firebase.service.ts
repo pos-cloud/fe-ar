@@ -56,7 +56,7 @@ export class FirebaseService implements OnModuleInit {
         this.logger.log(`Firebase Admin listo (${projectId})`);
       } else {
         this.logger.warn(
-          'Firebase Admin no inicializado: falta el JSON de service account (*firebase-adminsdk*.json) en la raíz del repo. /v1/* no va a andar; el POS sí.',
+          'Firebase Admin no inicializado: falta *firebase-adminsdk*.json en la raíz de /app (en el server: /home/fe-ar/firebase-adminsdk.json). /v1/* no va a andar; el POS sí.',
         );
       }
     } catch (error) {
@@ -82,7 +82,7 @@ export class FirebaseService implements OnModuleInit {
   assertReady() {
     if (!this.ready) {
       throw new ServiceUnavailableException(
-        'Firebase no configurado. Poné el JSON de service account (*firebase-adminsdk*.json) en la raíz del repo.',
+        'Firebase no configurado. Falta *firebase-adminsdk*.json en la raíz de /app.',
       );
     }
   }
