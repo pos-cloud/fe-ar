@@ -24,3 +24,8 @@ pnpm-debug.log*
 
 # Keys
 _keys/
+
+# Firebase Admin SDK (nunca commitear)
+*firebase-adminsdk*.json
+fe-ar-poscloud-firebase-adminsdk*.json
+serviceAccount*.json
