@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as admin from 'firebase-admin';
 import { createHash, randomBytes, timingSafeEqual } from 'crypto';
+import * as admin from 'firebase-admin';
 import { existsSync, readdirSync } from 'fs';
 import { join } from 'path';
 
@@ -20,6 +20,13 @@ export interface ApiKeyDoc {
   prefix: string;
   active: boolean;
   createdAt: string;
+}
+
+export interface AccountDoc {
+  email: string | null;
+  name: string | null;
+  createdAt: string;
+  apiKey?: ApiKeyDoc | null;
 }
 
 @Injectable()
@@ -71,7 +78,7 @@ export class FirebaseService implements OnModuleInit {
     }
     try {
       const match = readdirSync(process.cwd()).find(
-        (file) => file.includes('firebase-adminsdk') && file.endsWith('.json'),
+        file => file.includes('firebase-adminsdk') && file.endsWith('.json'),
       );
       return match ? join(process.cwd(), match) : undefined;
     } catch {
@@ -108,10 +115,21 @@ export class FirebaseService implements OnModuleInit {
       await ref.set({
         email: email || null,
         name: name || null,
+        apiKey: null,
         createdAt: new Date().toISOString(),
       });
     }
-    return { uid, ...(snap.exists ? snap.data() : { email, name }) };
+    return this.publicAccount(
+      uid,
+      snap.exists
+        ? (snap.data() as AccountDoc)
+        : {
+            email: email || null,
+            name: name || null,
+            createdAt: new Date().toISOString(),
+            apiKey: null,
+          },
+    );
   }
 
   async getAccount(uid: string) {
@@ -119,7 +137,20 @@ export class FirebaseService implements OnModuleInit {
     if (!snap.exists) {
       return null;
     }
-    return { uid, ...snap.data() };
+    return this.publicAccount(uid, snap.data() as AccountDoc);
+  }
+
+  private publicAccount(uid: string, data: AccountDoc) {
+    const apiKey = data.apiKey
+      ? { prefix: data.apiKey.prefix, active: data.apiKey.active, createdAt: data.apiKey.createdAt }
+      : null;
+    return {
+      uid,
+      email: data.email || null,
+      name: data.name || null,
+      createdAt: data.createdAt,
+      apiKey,
+    };
   }
 
   async listCuits(accountId: string): Promise<Array<CuitDoc & { cuit: string }>> {
@@ -153,7 +184,9 @@ export class FirebaseService implements OnModuleInit {
   }
 
   async setCuitStatus(cuit: string, status: CuitStatus) {
-    await this.db.doc(`cuits/${cuit}`).set({ status, updatedAt: new Date().toISOString() }, { merge: true });
+    await this.db
+      .doc(`cuits/${cuit}`)
+      .set({ status, updatedAt: new Date().toISOString() }, { merge: true });
   }
 
   hashApiKey(raw: string) {
@@ -161,39 +194,34 @@ export class FirebaseService implements OnModuleInit {
   }
 
   async createApiKey(uid: string) {
-    const existing = await this.db.collection(`accounts/${uid}/apikeys`).get();
-    const batch = this.db.batch();
-    existing.docs.forEach(doc => batch.delete(doc.ref));
-    if (!existing.empty) {
-      await batch.commit();
-    }
+    const snap = await this.db.doc(`accounts/${uid}`).get();
+    const rotated = !!(snap.exists && (snap.data() as AccountDoc).apiKey);
 
     const secret = randomBytes(24).toString('hex');
     const raw = `fp_live_${uid}_${secret}`;
-    const hash = this.hashApiKey(raw);
-    const prefix = `fp_live_${uid}_${secret.slice(0, 4)}…`;
-    const keyId = 'current';
-    const doc: ApiKeyDoc = {
-      hash,
-      prefix,
+    const apiKey: ApiKeyDoc = {
+      hash: this.hashApiKey(raw),
+      prefix: `fp_live_${uid}_${secret.slice(0, 4)}…`,
       active: true,
       createdAt: new Date().toISOString(),
     };
-    await this.db.doc(`accounts/${uid}/apikeys/${keyId}`).set(doc);
-    return { keyId, raw, prefix, createdAt: doc.createdAt, rotated: !existing.empty };
+    await this.db.doc(`accounts/${uid}`).set({ apiKey }, { merge: true });
+    return { raw, prefix: apiKey.prefix, createdAt: apiKey.createdAt, rotated };
   }
 
   async listApiKeys(uid: string) {
-    const snap = await this.db.collection(`accounts/${uid}/apikeys`).get();
-    return snap.docs.map(doc => {
-      const data = doc.data() as ApiKeyDoc;
-      return {
-        keyId: doc.id,
-        prefix: data.prefix,
-        active: data.active,
-        createdAt: data.createdAt,
-      };
-    });
+    const account = await this.getAccount(uid);
+    if (!account?.apiKey) {
+      return [];
+    }
+    return [
+      {
+        keyId: 'current',
+        prefix: account.apiKey.prefix,
+        active: account.apiKey.active,
+        createdAt: account.apiKey.createdAt,
+      },
+    ];
   }
 
   async verifyApiKey(raw: string): Promise<{ uid: string; keyId: string }> {
@@ -202,16 +230,19 @@ export class FirebaseService implements OnModuleInit {
       throw new Error('INVALID_KEY_FORMAT');
     }
     const uid = match[1];
+    const snap = await this.db.doc(`accounts/${uid}`).get();
+    const stored = snap.exists
+      ? ((snap.data() as AccountDoc).apiKey as ApiKeyDoc | undefined)
+      : undefined;
+    if (!stored?.active || !stored.hash) {
+      throw new Error('INVALID_KEY');
+    }
     const incomingHash = this.hashApiKey(raw);
-    const snap = await this.db.collection(`accounts/${uid}/apikeys`).where('active', '==', true).get();
-    for (const doc of snap.docs) {
-      const stored = (doc.data() as ApiKeyDoc).hash;
-      if (stored.length === incomingHash.length) {
-        const a = Buffer.from(stored, 'utf8');
-        const b = Buffer.from(incomingHash, 'utf8');
-        if (timingSafeEqual(a, b)) {
-          return { uid, keyId: doc.id };
-        }
+    if (stored.hash.length === incomingHash.length) {
+      const a = Buffer.from(stored.hash, 'utf8');
+      const b = Buffer.from(incomingHash, 'utf8');
+      if (timingSafeEqual(a, b)) {
+        return { uid, keyId: 'current' };
       }
     }
     throw new Error('INVALID_KEY');
@@ -222,7 +253,16 @@ export class FirebaseService implements OnModuleInit {
     return `${date.getFullYear()}-${m}`;
   }
 
-  async incrementInvoice(uid: string, event: { cuit: string; tipoComprobante: number; puntoVenta: number; cae: string; number: number }) {
+  async incrementInvoice(
+    uid: string,
+    event: {
+      cuit: string;
+      tipoComprobante: number;
+      puntoVenta: number;
+      cae: string;
+      number: number;
+    },
+  ) {
     const period = this.periodId();
     const usageRef = this.db.doc(`accounts/${uid}/usage/${period}`);
     await this.db.runTransaction(async tx => {
