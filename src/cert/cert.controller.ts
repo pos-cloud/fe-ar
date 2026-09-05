@@ -8,6 +8,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiExcludeController } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { promises as fs } from 'fs';
@@ -17,6 +18,7 @@ import { Stream } from 'stream';
 import { CertService } from './cert.service';
 import { CreateCertDto } from './create-cert.dto';
 
+@ApiExcludeController()
 @Controller('cert')
 export class CertController {
   constructor(private readonly certService: CertService) {}

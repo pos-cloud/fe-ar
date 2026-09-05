@@ -10,6 +10,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiExcludeController } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { promises as fs } from 'fs';
@@ -22,6 +23,7 @@ import { CertService } from '../cert/cert.service';
 import { FirebaseService } from '../firebase/firebase.service';
 import { CreateCertV1Dto } from './dto/cuit.dto';
 
+@ApiExcludeController()
 @Controller('v1/certs')
 @UseGuards(ApiKeyGuard)
 export class CertsV1Controller {

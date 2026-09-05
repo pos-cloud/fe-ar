@@ -15,6 +15,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { ApiExcludeController } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { createReadStream, existsSync } from 'fs';
@@ -27,6 +28,7 @@ import { CertService } from '../cert/cert.service';
 import { FirebaseService } from '../firebase/firebase.service';
 import { CreateCuitDto } from './dto/cuit.dto';
 
+@ApiExcludeController()
 @Controller('v1')
 @UseGuards(FirebaseAuthGuard)
 export class AccountController {

@@ -7,6 +7,9 @@ import * as path from 'path';
 import { LoginCmsReturn, TicketDeAcceso } from '../../models';
 import { SoapHelperService } from '../soap-helper/soap-helper.service';
 
+export const WSAA_SERVICE_WSFE = 'wsfe';
+export const WSAA_SERVICE_PADRON = 'ws_sr_constancia_inscripcion';
+
 @Injectable()
 export class WsaaService {
   private readonly logger = new Logger('WsaaService');
@@ -30,10 +33,21 @@ export class WsaaService {
       this.endpoint = 'https://wsaa.afip.gov.ar/ws/services/LoginCms';
     }
   }
-  private async signTRA(cuit: string): Promise<string> {
+  private filesFor(service: string = WSAA_SERVICE_WSFE) {
+    if (service === WSAA_SERVICE_WSFE) {
+      return { ta: 'TA.xml', tra: 'TRA.xml', traTmp: 'TRA.tmp' };
+    }
+    if (service === WSAA_SERVICE_PADRON) {
+      return { ta: 'TA-padron.xml', tra: 'TRA-padron.xml', traTmp: 'TRA-padron.tmp' };
+    }
+    return { ta: `TA-${service}.xml`, tra: `TRA-${service}.xml`, traTmp: `TRA-${service}.tmp` };
+  }
+
+  private async signTRA(cuit: string, service: string = WSAA_SERVICE_WSFE): Promise<string> {
     try {
-      const inputFilePath = this.getFilePath(`../resources/${cuit}`, 'TRA.xml');
-      const outputFilePath = this.getFilePath(`../resources/${cuit}`, 'TRA.tmp');
+      const files = this.filesFor(service);
+      const inputFilePath = this.getFilePath(`../resources/${cuit}`, files.tra);
+      const outputFilePath = this.getFilePath(`../resources/${cuit}`, files.traTmp);
       const certPath = this.getFilePath(`${this.keysFolder}/${cuit}`, this.cert);
       const privateKeyPath = this.getFilePath(`${this.keysFolder}/${cuit}`, this.privateKey);
 
@@ -97,9 +111,9 @@ export class WsaaService {
     return CMS;
   }
 
-  async getTA(cuit: string): Promise<TicketDeAcceso | null> {
+  async getTA(cuit: string, service: string = WSAA_SERVICE_WSFE): Promise<TicketDeAcceso | null> {
     try {
-      const TAFilePath = path.join(__dirname, `../resources/${cuit}`, this.TAFilename);
+      const TAFilePath = path.join(__dirname, `../resources/${cuit}`, this.filesFor(service).ta);
       const TAFile = await fs.readFile(TAFilePath, 'utf8');
       const TAObject = await this.soapHelper.xml2Array(TAFile);
       const TA = TAObject.loginTicketResponse;
@@ -110,9 +124,12 @@ export class WsaaService {
     }
   }
 
-  async getIfNotExpired(cuit: string): Promise<string | boolean> {
+  async getIfNotExpired(
+    cuit: string,
+    service: string = WSAA_SERVICE_WSFE,
+  ): Promise<string | boolean> {
     try {
-      const TA = await this.getTA(cuit);
+      const TA = await this.getTA(cuit, service);
 
       if (TA && TA.header && TA.header[0].expirationTime) {
         const expirationTime = TA.header[0].expirationTime[0];
@@ -132,12 +149,12 @@ export class WsaaService {
     }
   }
 
-  async generarTA(cuit: string): Promise<object> {
+  async generarTA(cuit: string, service: string = WSAA_SERVICE_WSFE): Promise<object> {
     try {
-      const xml = await this.createTRA(cuit);
-      const cms = await this.signTRA(cuit);
+      const xml = await this.createTRA(cuit, service);
+      const cms = await this.signTRA(cuit, service);
       try {
-        const response = await this.callWSAA(cms, cuit);
+        const response = await this.callWSAA(cms, cuit, service);
         return response;
       } catch (error) {
         throw new Error(`${error} --------- ${xml}`);
@@ -147,7 +164,7 @@ export class WsaaService {
     }
   }
 
-  private async createTRA(cuit: string): Promise<unknown> {
+  private async createTRA(cuit: string, service: string = WSAA_SERVICE_WSFE): Promise<unknown> {
     try {
       const traJson = {
         version: '1.0',
@@ -170,10 +187,10 @@ export class WsaaService {
                   <generationTime>${traJson.header.generationTime}</generationTime>
                   <expirationTime>${traJson.header.expirationTime}</expirationTime>
               </header>
-              <service>wsfe</service>
+              <service>${service}</service>
           </loginTicketRequest>
       `;
-      const filePath = this.getFilePath(`../resources/${cuit}`, 'TRA.xml');
+      const filePath = this.getFilePath(`../resources/${cuit}`, this.filesFor(service).tra);
       const dirPath = path.dirname(filePath);
       try {
         await fs.access(dirPath);
@@ -187,7 +204,11 @@ export class WsaaService {
     }
   }
 
-  private async callWSAA(cms: Object, cuit: string): Promise<Object> {
+  private async callWSAA(
+    cms: Object,
+    cuit: string,
+    service: string = WSAA_SERVICE_WSFE,
+  ): Promise<Object> {
     try {
       const client = await this.soapHelper.createClient(this.address, this.endpoint);
 
@@ -195,7 +216,7 @@ export class WsaaService {
         in0: cms,
       };
       const response: LoginCmsReturn = await this.soapHelper.callEndpoint(client, 'loginCms', xml);
-      const filePath = this.getFilePath(`../resources/${cuit}`, 'TA.xml');
+      const filePath = this.getFilePath(`../resources/${cuit}`, this.filesFor(service).ta);
       const dirPath = path.dirname(filePath);
       try {
         await fs.access(dirPath);

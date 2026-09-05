@@ -13,6 +13,9 @@
       },
       {
         "include": "afip/wsfev1/wsfev1.wsdl"
+      },
+      {
+        "include": "afip/padron/personaServiceA5.wsdl"
       }
     ]
   }
