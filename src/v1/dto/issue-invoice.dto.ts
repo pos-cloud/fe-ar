@@ -1,6 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
 export class ReceptorDto {
   @ApiProperty({ example: 99, description: 'Tipo de documento AFIP. 99 = consumidor final.' })
@@ -122,4 +131,61 @@ export class IssueInvoiceDto {
   @IsOptional()
   @IsNumber()
   vatCondition?: number;
+
+  @ApiPropertyOptional({
+    example: 2,
+    description: '1 = productos (default), 2 = servicios, 3 = productos y servicios. Si es 2 o 3, ARCA exige las fechas de servicio.',
+  })
+  @IsOptional()
+  @IsIn([1, 2, 3])
+  concepto?: number;
+
+  @ApiPropertyOptional({
+    example: '2026-09-01',
+    description: 'Inicio del período facturado. Obligatorio si concepto es 2 o 3. YYYY-MM-DD o YYYYMMDD.',
+  })
+  @IsOptional()
+  @IsString()
+  fechaServicioDesde?: string;
+
+  @ApiPropertyOptional({
+    example: '2026-09-30',
+    description: 'Fin del período facturado. Obligatorio si concepto es 2 o 3.',
+  })
+  @IsOptional()
+  @IsString()
+  fechaServicioHasta?: string;
+
+  @ApiPropertyOptional({
+    example: '2026-10-10',
+    description: 'Vencimiento del pago. Obligatorio si concepto es 2 o 3.',
+  })
+  @IsOptional()
+  @IsString()
+  fechaVtoPago?: string;
+
+  @ApiPropertyOptional({
+    example: 'DOL',
+    description: 'Código AFIP de moneda. PES (default), DOL, EUR. También acepta ARS y USD.',
+  })
+  @IsOptional()
+  @IsString()
+  moneda?: string;
+
+  @ApiPropertyOptional({
+    example: 1450.5,
+    description: 'Cotización a pesos. Obligatoria si moneda no es PES. En PES se ignora y va 1.',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0.000001)
+  cotizacion?: number;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Si la moneda no es PES: si se cancela en esa moneda (CanMisMonExt). Default true.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  cancelaMismaMoneda?: boolean;
 }

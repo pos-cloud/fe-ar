@@ -25,6 +25,7 @@ import {
   facturaAExample,
   facturaBExample,
   facturaCExample,
+  facturaServiciosUsdExample,
   invoiceErrorExample,
   invoiceOkExample,
   notaCreditoExample,
@@ -56,6 +57,10 @@ export class InvoicesController {
       facturaA: { summary: 'Factura A — RI, IVA 21%', value: facturaAExample },
       facturaC: { summary: 'Factura C — emisor monotributista', value: facturaCExample },
       notaCredito: { summary: 'Nota de crédito B asociada', value: notaCreditoExample },
+      serviciosUsd: {
+        summary: 'Factura A — servicios en USD',
+        value: facturaServiciosUsdExample,
+      },
     },
   })
   @ApiOkResponse({

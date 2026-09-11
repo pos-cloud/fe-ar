@@ -36,6 +36,22 @@ export const notaCreditoExample = {
   comprobantesAsociados: [{ tipo: 6, puntoVenta: 1, numero: 128 }],
 };
 
+export const facturaServiciosUsdExample = {
+  cuit: '20378228922',
+  puntoVenta: 1,
+  tipoComprobante: 1,
+  concepto: 2,
+  fecha: '2026-09-30',
+  fechaServicioDesde: '2026-09-01',
+  fechaServicioHasta: '2026-09-30',
+  fechaVtoPago: '2026-10-10',
+  moneda: 'DOL',
+  cotizacion: 1450.5,
+  receptor: { docTipo: 80, docNro: '30712345678', condicionIva: 1 },
+  importes: { neto: 1000, iva: 210, exento: 0, total: 1210 },
+  ivas: [{ id: 5, baseImp: 1000, importe: 210 }],
+};
+
 export const invoiceOkExample = {
   data: {
     number: 129,
